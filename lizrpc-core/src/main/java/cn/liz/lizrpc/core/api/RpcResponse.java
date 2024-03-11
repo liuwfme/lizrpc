@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class RpcResponse<T> {
     boolean status;// 状态：true
     T data;// new User
+    Exception ex;
 }

@@ -3,6 +3,7 @@ package cn.liz.lizrpc.core.provider;
 import cn.liz.lizrpc.core.annotation.LizProvider;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
+import cn.liz.lizrpc.core.util.MethodUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
@@ -36,16 +37,26 @@ public class ProviderBootstrap implements ApplicationContextAware {
     }
 
     public RpcResponse invoke(RpcRequest request) {
+        String methodName = request.getMethod();
+        if (MethodUtils.checkLocalMethod(methodName)) {
+            return null;
+        }
+
+        RpcResponse rpcResponse = new RpcResponse();
         Object bean = skeleton.get(request.getService());
         try {
 //            Method method = bean.getClass().getMethod(request.getMethod());
             Method method = findMethod(bean.getClass(), request.getMethod());
             Object result = method.invoke(bean, request.getArgs());
-            return new RpcResponse(true, result);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-            throw new RuntimeException();
+            rpcResponse.setStatus(true);
+            rpcResponse.setData(result);
+            return rpcResponse;
+        } catch (InvocationTargetException e) {
+            rpcResponse.setEx(new RuntimeException(e.getTargetException().getMessage()));
+        } catch (IllegalAccessException e) {
+            rpcResponse.setEx(new RuntimeException(e.getMessage()));
         }
+        return rpcResponse;
     }
 
     private Method findMethod(Class<?> aClass, String methodName) {

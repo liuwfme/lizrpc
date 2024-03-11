@@ -26,6 +26,7 @@
         <module>lizrpc-core</module>
         <module>lizrpc-demo-api</module>
         <module>lizrpc-demo-provider</module>
+        <module>lizrpc-demo-consumer</module>
     </modules>
 
     <build>
