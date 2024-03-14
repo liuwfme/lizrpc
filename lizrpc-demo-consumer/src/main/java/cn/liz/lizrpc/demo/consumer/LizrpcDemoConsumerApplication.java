@@ -39,13 +39,19 @@ public class LizrpcDemoConsumerApplication {
     @Bean
     public ApplicationRunner consumer_runner() {
         return x -> {
-//            User user = userService.findById(1);
-//            System.out.println("PRC result userService.findById = " + user);
+            User user = userService.findById(1);
+            System.out.println("PRC result userService.findById = " + user);
 
-            userService.getId(11);
-            userService.getName();
+            User user1 = userService.findById(1, "lwf");
+            System.out.println("PRC result userService.findById = " + user1);
 
-            System.out.println(userService.toString());
+            System.out.println(userService.getName());
+            System.out.println(userService.getName(123));
+
+//            userService.getId(11);
+//            userService.getName();
+
+//            System.out.println(userService.toString());
 
 //            Order order = orderService.findById(2);
 //            System.out.println("PRC result orderService.findById = " + order);

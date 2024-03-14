@@ -3,26 +3,30 @@ package cn.liz.lizrpc.core.provider;
 import cn.liz.lizrpc.core.annotation.LizProvider;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
+import cn.liz.lizrpc.core.meta.ProviderMeta;
 import cn.liz.lizrpc.core.util.MethodUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Data
 public class ProviderBootstrap implements ApplicationContextAware {
     ApplicationContext applicationContext;
 
-    private Map<String, Object> skeleton = new HashMap<>();
+    private MultiValueMap<String, ProviderMeta> skeleton = new LinkedMultiValueMap<>();
 
     @PostConstruct // init-method
     // PreDestroy
-    public void buildProviders() {
+    public void start() {
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(LizProvider.class);
         providers.forEach((x, y) -> System.out.println("beanName : " + x));
 //        skeleton.putAll(providers);
@@ -33,21 +37,39 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private void genInterface(Object x) {
         Class<?> interfacee = x.getClass().getInterfaces()[0];
-        skeleton.put(interfacee.getCanonicalName(), x);
+        Method[] methods = interfacee.getMethods();
+        for (Method method : methods) {
+            if (MethodUtils.checkLocalMethod(method)) {
+                continue;
+            }
+            createProvider(interfacee, x, method);
+        }
+//        skeleton.put(interfacee.getCanonicalName(), x);
+    }
+
+    private void createProvider(Class<?> interfacee, Object x, Method method) {
+        ProviderMeta meta = new ProviderMeta();
+        meta.setMethod(method);
+        meta.setServiceImpl(x);
+        meta.setMethodSign(MethodUtils.methodSign(method));
+        System.out.println("created a provider : " + meta);
+        skeleton.add(interfacee.getCanonicalName(), meta);
     }
 
     public RpcResponse invoke(RpcRequest request) {
-        String methodName = request.getMethod();
-        if (MethodUtils.checkLocalMethod(methodName)) {
-            return null;
-        }
-
+//        if (MethodUtils.checkLocalMethod(methodSign)) {
+//            return null;
+//        }
         RpcResponse rpcResponse = new RpcResponse();
-        Object bean = skeleton.get(request.getService());
+        List<ProviderMeta> providerMetas = skeleton.get(request.getService());
         try {
 //            Method method = bean.getClass().getMethod(request.getMethod());
-            Method method = findMethod(bean.getClass(), request.getMethod());
-            Object result = method.invoke(bean, request.getArgs());
+//            Method method = findMethod(bean.getClass(), request.getMethodSign());
+            ProviderMeta meta = findProviderMeta(providerMetas, request.getMethodSign());
+            Method method = meta.getMethod();
+
+            Object result = method.invoke(meta.getServiceImpl(), request.getArgs());
+
             rpcResponse.setStatus(true);
             rpcResponse.setData(result);
             return rpcResponse;
@@ -57,6 +79,12 @@ public class ProviderBootstrap implements ApplicationContextAware {
             rpcResponse.setEx(new RuntimeException(e.getMessage()));
         }
         return rpcResponse;
+    }
+
+    private ProviderMeta findProviderMeta(List<ProviderMeta> providerMetas, String methodSign) {
+        Optional<ProviderMeta> optional = providerMetas.stream()
+                .filter(x -> x.getMethodSign().equals(methodSign)).findFirst();
+        return optional.orElse(null);
     }
 
     private Method findMethod(Class<?> aClass, String methodName) {

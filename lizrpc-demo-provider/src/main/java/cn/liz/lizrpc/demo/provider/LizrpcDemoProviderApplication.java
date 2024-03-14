@@ -39,11 +39,18 @@ public class LizrpcDemoProviderApplication {
         return x -> {
             RpcRequest request = new RpcRequest();
             request.setService("cn.liz.lizrpc.demo.api.UserService");
-            request.setMethod("findById");
+            request.setMethodSign("findById@1_int");
             request.setArgs(new Object[]{100});
-
             RpcResponse response = invoke(request);
             System.out.println("return : " + response.getData());
+
+            RpcRequest request1 = new RpcRequest();
+            request1.setService("cn.liz.lizrpc.demo.api.UserService");
+            request1.setMethodSign("findById@2_int_java.lang.String");
+            request1.setArgs(new Object[]{100, "lwf"});
+            RpcResponse response1 = invoke(request1);
+            System.out.println("return : " + response1.getData());
+
         };
     }
 }

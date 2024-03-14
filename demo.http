@@ -5,11 +5,20 @@ Content-Type: application/json
 
 {
   "service": "cn.liz.lizrpc.demo.api.UserService",
-  "method": "findById",
-  "args": [
-    100
-  ]
+  "methodSign": "findById@1_int",
+  "args": [100]
 }
+
+### 获取用户信息
+POST http://localhost:8080/
+Content-Type: application/json
+
+{
+  "service": "cn.liz.lizrpc.demo.api.UserService",
+  "methodSign": "findById@2_int_java.lang.String",
+  "args": [100, "lwf"]
+}
+
 
 ### 获取订单信息
 POST http://localhost:8080/
@@ -17,7 +26,7 @@ Content-Type: application/json
 
 {
  "service": "cn.liz.lizrpc.demo.api.OrderService",
-  "method": "findById",
+  "methodSign": "findById",
   "args": [200]
 }
 
