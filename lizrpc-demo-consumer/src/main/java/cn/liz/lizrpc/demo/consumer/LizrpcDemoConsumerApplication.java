@@ -39,27 +39,43 @@ public class LizrpcDemoConsumerApplication {
     @Bean
     public ApplicationRunner consumer_runner() {
         return x -> {
+
             User user = userService.findById(1);
             System.out.println("PRC result userService.findById = " + user);
 
             User user1 = userService.findById(1, "lwf");
             System.out.println("PRC result userService.findById = " + user1);
 
-            System.out.println(userService.getName());
-            System.out.println(userService.getName(123));
+            System.out.println("--> userService.getName : " + userService.getName());
+            System.out.println("--> userService.getName(123) : " + userService.getName(123));
 
-//            userService.getId(11);
-//            userService.getName();
+            userService.getId(11);
+            userService.getName();
 
-//            System.out.println(userService.toString());
+            System.out.println("--> userService.toString : " + userService.toString());
 
-//            Order order = orderService.findById(2);
-//            System.out.println("PRC result orderService.findById = " + order);
+            Order order = orderService.findById(2);
+            System.out.println("PRC result orderService.findById(2) = " + order);
 
-            //demo2.test();
+            demo2.test();
 
 //            Order order404 = orderService.findById(404);
 //            System.out.println("PRC result orderService.findById = " + order404);
+
+            System.out.println("--> userService.getId(33) : " + userService.getId(33));
+            System.out.println("--> userService.getId(new User(123, \"lwf\")) : " + userService.getId(new User(123, "lwf")));
+            System.out.println("--> userService.getId(12f) : " + userService.getId(12f));
+            System.out.println("--> userService.userService.getIds() : " + Arrays.toString(userService.getIds()));
+
+            System.out.println("--> userService.getLongIds() : " + userService.getLongIds());
+            for (long id : userService.getLongIds()) {
+                System.out.println(id);
+            }
+
+            System.out.println("--> userService.getIds(int[] ids) : " + userService.getIds(new int[]{5, 6, 7}));
+            for (int id : userService.getIds(new int[]{4, 5, 6})) {
+                System.out.println(id);
+            }
 
         };
     }
