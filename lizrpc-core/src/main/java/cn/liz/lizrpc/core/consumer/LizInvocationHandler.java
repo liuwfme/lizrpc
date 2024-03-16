@@ -10,9 +10,8 @@ import com.alibaba.fastjson.JSONObject;
 import okhttp3.*;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class LizInvocationHandler implements InvocationHandler {
@@ -30,32 +29,70 @@ public class LizInvocationHandler implements InvocationHandler {
         if (MethodUtils.checkLocalMethod(method.getName())) {
             return null;
         }
-
         RpcRequest rpcRequest = new RpcRequest();
         rpcRequest.setService(service.getCanonicalName());
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
-
         RpcResponse rpcResponse = post(rpcRequest);
-
         if (rpcResponse.isStatus()) {
-            // 处理基本类型
             Object data = rpcResponse.getData();
-            if (data instanceof JSONObject) {
-                JSONObject jsonResult = (JSONObject) rpcResponse.getData();
-                return jsonResult.toJavaObject(method.getReturnType());
+            Class<?> type = method.getReturnType();
+            System.out.println("method.returnType : " + type);
+            if (data instanceof JSONObject jsonResult) {
+                if (Map.class.isAssignableFrom(type)) {
+                    Map returnMap = new HashMap();
+                    Type genericReturnType = method.getGenericReturnType();
+                    System.out.println("genericReturnType : " + genericReturnType);
+                    if (genericReturnType instanceof ParameterizedType parameterizedType) {
+                        Class<?> keyType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+                        Class<?> valueType = (Class<?>) parameterizedType.getActualTypeArguments()[1];
+                        System.out.println("keyType : " + keyType);
+                        System.out.println("valueType : " + valueType);
+                        jsonResult.entrySet().stream().forEach(e -> {
+                            Object key = TypeUtils.cast(e.getKey(), keyType);
+                            Object value = TypeUtils.cast(e.getValue(), valueType);
+                            returnMap.put(key, value);
+                        });
+                    }
+                    return returnMap;
+                }
+                return jsonResult.toJavaObject(type);
             } else if (data instanceof JSONArray jsonArray) {
                 Object[] array = jsonArray.toArray();
-                Class<?> componentType = method.getReturnType().getComponentType();//返回元素的类型
-//                componentType = method.getReturnType().arrayType();//返回数组的类型
-                System.out.println(componentType);
-                Object resultArray = Array.newInstance(componentType, array.length);
-                for (int i = 0; i < array.length; i++) {
-                    Array.set(resultArray, i, array[i]);
+                if (type.isArray()) {
+                    Class<?> componentType = type.getComponentType();
+                    Object returnArray = Array.newInstance(componentType, array.length);
+                    for (int i = 0; i < array.length; i++) {
+                        Array.set(returnArray, i, array[i]);
+                    }
+                    return returnArray;
+                } else if (List.class.isAssignableFrom(type)) {
+                    List<Object> resultList = new ArrayList<>(array.length);
+                    Type genericReturnType = method.getGenericReturnType();
+                    System.out.println("genericReturnType : " + genericReturnType);
+                    if (genericReturnType instanceof ParameterizedType parameterizedType) {
+                        Type actualType = parameterizedType.getActualTypeArguments()[0];
+                        System.out.println("actualType : " + actualType);
+                        for (Object obj : array) {
+                            resultList.add(TypeUtils.cast(obj, (Class<?>) actualType));
+                        }
+                    } else {
+                        resultList.addAll(Arrays.asList(array));
+                    }
+                    return resultList;
+                } else {
+                    return null;
                 }
-                return resultArray;
+//                Class<?> componentType = method.getReturnType().getComponentType();//返回元素的类型
+////                componentType = method.getReturnType().arrayType();//返回数组的类型
+//                System.out.println(componentType);
+//                Object resultArray = Array.newInstance(componentType, array.length);
+//                for (int i = 0; i < array.length; i++) {
+//                    Array.set(resultArray, i, array[i]);
+//                }
+//                return resultArray;
             } else {
-                return TypeUtils.cast(data, method.getReturnType());
+                return TypeUtils.cast(data, type);
             }
         } else {
             Exception ex = rpcResponse.getEx();
