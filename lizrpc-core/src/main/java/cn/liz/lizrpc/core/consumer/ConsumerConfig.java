@@ -1,5 +1,9 @@
 package cn.liz.lizrpc.core.consumer;
 
+import cn.liz.lizrpc.core.api.LoadBalancer;
+import cn.liz.lizrpc.core.api.Router;
+import cn.liz.lizrpc.core.cluster.RandomLoadBalancer;
+import cn.liz.lizrpc.core.cluster.RoundRibonLoadBalancer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -22,5 +26,17 @@ public class ConsumerConfig {
             consumerBootstrap.start();
             System.out.println("consumerBootstrap started ...");
         };
+    }
+
+    @Bean
+    public LoadBalancer loadBalancer() {
+//        return LoadBalancer.Default;
+//        return new RandomLoadBalancer();
+        return new RoundRibonLoadBalancer();
+    }
+
+    @Bean
+    public Router router() {
+        return Router.Default;
     }
 }

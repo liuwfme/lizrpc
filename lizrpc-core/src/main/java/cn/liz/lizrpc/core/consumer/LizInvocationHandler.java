@@ -1,7 +1,6 @@
 package cn.liz.lizrpc.core.consumer;
 
-import cn.liz.lizrpc.core.api.RpcRequest;
-import cn.liz.lizrpc.core.api.RpcResponse;
+import cn.liz.lizrpc.core.api.*;
 import cn.liz.lizrpc.core.util.MethodUtils;
 import cn.liz.lizrpc.core.util.TypeUtils;
 import com.alibaba.fastjson.JSON;
@@ -19,9 +18,15 @@ public class LizInvocationHandler implements InvocationHandler {
     final static MediaType JSON_TYPE = MediaType.get("application/json; charset=utf-8");
 
     Class<?> service;
+//    Router router;
+//    LoadBalancer loadBalancer;
+    RpcContext context;
+    List<String> providers;
 
-    public LizInvocationHandler(Class<?> clazz) {
+    public LizInvocationHandler(Class<?> clazz, RpcContext context, List<String> providers) {
         this.service = clazz;
+        this.context = context;
+        this.providers = providers;
     }
 
     @Override
@@ -33,7 +38,14 @@ public class LizInvocationHandler implements InvocationHandler {
         rpcRequest.setService(service.getCanonicalName());
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
-        RpcResponse rpcResponse = post(rpcRequest);
+
+//        List<String> urls = router.route(List.of(this.providers));
+        List<String> urls = context.getRouter().route(this.providers);
+//        String url = (String) loadBalancer.choose(urls);
+        String url = (String) context.getLoadBalancer().choose(urls);
+        System.out.println("loadBalancer.choose(urls) ---> " + url);
+
+        RpcResponse rpcResponse = post(rpcRequest, url);
         if (rpcResponse.isStatus()) {
             Object data = rpcResponse.getData();
             Class<?> type = method.getReturnType();
@@ -108,11 +120,12 @@ public class LizInvocationHandler implements InvocationHandler {
             .connectTimeout(1, TimeUnit.SECONDS)
             .build();
 
-    private RpcResponse post(RpcRequest rpcRequest) {
+    private RpcResponse post(RpcRequest rpcRequest, String url) {
         String reqJson = JSON.toJSONString(rpcRequest);
         System.out.println("===> reqJson = " + reqJson);
         Request request = new Request.Builder()
-                .url("http://localhost:8080/")
+//                .url("http://localhost:8080/")
+                .url(url)
                 .post(RequestBody.create(reqJson, JSON_TYPE))
                 .build();
         try {

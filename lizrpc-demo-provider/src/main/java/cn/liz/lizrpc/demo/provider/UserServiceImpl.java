@@ -3,6 +3,8 @@ package cn.liz.lizrpc.demo.provider;
 import cn.liz.lizrpc.core.annotation.LizProvider;
 import cn.liz.lizrpc.demo.api.User;
 import cn.liz.lizrpc.demo.api.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -12,9 +14,12 @@ import java.util.Map;
 @LizProvider
 public class UserServiceImpl implements UserService {
 
+    @Autowired
+    Environment environment;
+
     @Override
     public User findById(int id) {
-        return new User(id, "Liz-" + System.currentTimeMillis());
+        return new User(id, "Liz-" + environment.getProperty("server.port") + "_" + System.currentTimeMillis());
     }
 
     @Override

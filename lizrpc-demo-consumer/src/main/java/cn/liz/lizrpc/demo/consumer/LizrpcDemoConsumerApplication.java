@@ -13,6 +13,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,6 +23,7 @@ import java.util.Map;
 
 @SpringBootApplication
 @Import({ConsumerConfig.class})
+@RestController
 public class LizrpcDemoConsumerApplication {
 
     @Autowired
@@ -34,6 +37,11 @@ public class LizrpcDemoConsumerApplication {
 
     @Autowired
     Demo2 demo2;
+
+    @RequestMapping("/")
+    public User invoke(int id) {
+        return userService.findById(id);
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(LizrpcDemoConsumerApplication.class, args);
