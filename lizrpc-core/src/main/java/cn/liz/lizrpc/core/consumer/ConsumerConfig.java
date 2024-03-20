@@ -1,17 +1,24 @@
 package cn.liz.lizrpc.core.consumer;
 
 import cn.liz.lizrpc.core.api.LoadBalancer;
+import cn.liz.lizrpc.core.api.RegistryCenter;
 import cn.liz.lizrpc.core.api.Router;
 import cn.liz.lizrpc.core.cluster.RandomLoadBalancer;
 import cn.liz.lizrpc.core.cluster.RoundRibonLoadBalancer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
+import java.util.List;
+
 @Configuration
 public class ConsumerConfig {
+
+    @Value("${lizrpc.providers}")
+    String servers;
 
     @Bean
     ConsumerBootstrap createConsumerBootstrap() {
@@ -38,5 +45,10 @@ public class ConsumerConfig {
     @Bean
     public Router router() {
         return Router.Default;
+    }
+
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    public RegistryCenter consumer_rc() {
+        return new RegistryCenter.StaticRegistryCenter(List.of(servers.split(",")));
     }
 }

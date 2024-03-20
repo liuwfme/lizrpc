@@ -2,6 +2,7 @@ package cn.liz.lizrpc.core.consumer;
 
 import cn.liz.lizrpc.core.annotation.LizConsumer;
 import cn.liz.lizrpc.core.api.LoadBalancer;
+import cn.liz.lizrpc.core.api.RegistryCenter;
 import cn.liz.lizrpc.core.api.Router;
 import cn.liz.lizrpc.core.api.RpcContext;
 import lombok.Data;
@@ -31,16 +32,17 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
         Router router = applicationContext.getBean(Router.class);
         LoadBalancer loadBalancer = applicationContext.getBean(LoadBalancer.class);
+        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
 
         RpcContext context = new RpcContext();
         context.setRouter(router);
         context.setLoadBalancer(loadBalancer);
 
-        String urls = environment.getProperty("lizrpc.providers", "");
-        if (Strings.isEmpty(urls)) {
-            System.out.println("lizrpc.providers is empty");
-        }
-        String[] providers = urls.split(",");
+//        String urls = environment.getProperty("lizrpc.providers", "");
+//        if (Strings.isEmpty(urls)) {
+//            System.out.println("lizrpc.providers is empty");
+//        }
+//        String[] providers = urls.split(",");
 
         String[] names = applicationContext.getBeanDefinitionNames();
         for (String name : names) {
@@ -57,7 +59,8 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                     String serviceName = service.getCanonicalName();
                     Object consumer = stub.get(serviceName);
                     if (consumer == null) {
-                        consumer = createConsumer(service, context, List.of(providers));
+//                        consumer = createConsumer(service, context, List.of(providers));
+                        consumer = createFromARegistry(service, context, rc);
                     }
                     f.setAccessible(true);
                     f.set(bean, consumer);
@@ -66,6 +69,12 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                 }
             });
         }
+    }
+
+    private Object createFromARegistry(Class<?> service, RpcContext context, RegistryCenter rc) {
+        String serviceName = service.getCanonicalName();
+        List<String> providers = rc.fetchAll(serviceName);
+        return createConsumer(service, context, providers);
     }
 
     private Object createConsumer(Class<?> service, RpcContext context, List<String> providers) {
