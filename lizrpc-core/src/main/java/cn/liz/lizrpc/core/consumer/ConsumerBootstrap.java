@@ -5,6 +5,8 @@ import cn.liz.lizrpc.core.api.LoadBalancer;
 import cn.liz.lizrpc.core.api.RegistryCenter;
 import cn.liz.lizrpc.core.api.Router;
 import cn.liz.lizrpc.core.api.RpcContext;
+import cn.liz.lizrpc.core.registry.ChangedListener;
+import cn.liz.lizrpc.core.registry.Event;
 import lombok.Data;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.context.ApplicationContext;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Data
 public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
@@ -73,8 +76,22 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
     private Object createFromARegistry(Class<?> service, RpcContext context, RegistryCenter rc) {
         String serviceName = service.getCanonicalName();
-        List<String> providers = rc.fetchAll(serviceName);
+        List<String> providers = mapUrl(rc.fetchAll(serviceName));
+        System.out.println("===> map to providers : ");
+        providers.forEach(System.out::println);
+
+        rc.subscribe(serviceName, event -> {
+            providers.clear();
+            providers.addAll(mapUrl(event.getData()));
+        });
+
         return createConsumer(service, context, providers);
+    }
+
+    private List<String> mapUrl(List<String> nodes) {
+        return nodes.stream()
+                .map(x -> "http://" + x.replace('_', ':'))
+                .collect(Collectors.toList());
     }
 
     private Object createConsumer(Class<?> service, RpcContext context, List<String> providers) {

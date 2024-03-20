@@ -1,5 +1,7 @@
 package cn.liz.lizrpc.core.api;
 
+import cn.liz.lizrpc.core.registry.ChangedListener;
+
 import java.util.List;
 
 public interface RegistryCenter {
@@ -15,7 +17,8 @@ public interface RegistryCenter {
 
     // consumer
     List<String> fetchAll(String service);
-    // void subscribe();
+
+    void subscribe(String service, ChangedListener listener);
 
     class StaticRegistryCenter implements RegistryCenter {
 
@@ -48,6 +51,11 @@ public interface RegistryCenter {
         @Override
         public List<String> fetchAll(String service) {
             return providers;
+        }
+
+        @Override
+        public void subscribe(String service, ChangedListener listener) {
+
         }
     }
 }
