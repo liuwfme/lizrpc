@@ -22,7 +22,12 @@ public class TypeUtils {
             Class<?> componentType = type.getComponentType();//返回元素的类型
             Object resultArray = Array.newInstance(componentType, length);
             for (int i = 0; i < length; i++) {
-                Array.set(resultArray, i, Array.get(origin, i));
+                if (componentType.isPrimitive() || componentType.getPackageName().startsWith("java")) {
+                    Array.set(resultArray, i, Array.get(origin, i));
+                } else {
+                    Object obj = cast(Array.get(origin, i), componentType);
+                    Array.set(resultArray, i, obj);
+                }
             }
             return resultArray;
         }

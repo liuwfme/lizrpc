@@ -137,7 +137,12 @@ public class LizrpcDemoConsumerApplication {
             System.out.println("Case 13. >>===[测试参数和返回值都是Boolean/boolean类型]===");
             System.out.println("userService.getFlag(false) = " + userService.getFlag(false));
 
-
+            System.out.println("case 14. >>===[测试参数和返回值都是User[]类型]===");
+            User[] users = new User[]{
+                    new User(11, "liz11"),
+                    new User(22, "liz22")
+            };
+            Arrays.stream(userService.getUsers(users)).forEach(System.out::println);
         };
     }
 }

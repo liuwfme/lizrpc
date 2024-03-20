@@ -18,7 +18,7 @@ public class LizInvocationHandler implements InvocationHandler {
     final static MediaType JSON_TYPE = MediaType.get("application/json; charset=utf-8");
 
     Class<?> service;
-//    Router router;
+    //    Router router;
 //    LoadBalancer loadBalancer;
     RpcContext context;
     List<String> providers;
@@ -75,7 +75,12 @@ public class LizInvocationHandler implements InvocationHandler {
                     Class<?> componentType = type.getComponentType();
                     Object returnArray = Array.newInstance(componentType, array.length);
                     for (int i = 0; i < array.length; i++) {
-                        Array.set(returnArray, i, array[i]);
+                        if (componentType.isPrimitive() || componentType.getPackageName().startsWith("java")) {
+                            Array.set(returnArray, i, array[i]);
+                        } else {
+                            Object obj = TypeUtils.cast(array[i], componentType);
+                            Array.set(returnArray, i, obj);
+                        }
                     }
                     return returnArray;
                 } else if (List.class.isAssignableFrom(type)) {
