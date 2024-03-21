@@ -1,7 +1,13 @@
 package cn.liz.lizrpc.core.util;
 
+import cn.liz.lizrpc.core.annotation.LizConsumer;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class MethodUtils {
     public static boolean checkLocalMethod(final String method) {
@@ -31,6 +37,20 @@ public class MethodUtils {
 
     public static String methodSign(Method method, Class clazz) {
         return null;
+    }
+
+    public static List<Field> findAnnotatedField(Class<?> aClass, Class<? extends Annotation> annotationClass) {
+        List<Field> result = new ArrayList<>();
+        while (aClass != null) {
+            Field[] fields = aClass.getDeclaredFields();
+            for (Field f : fields) {
+                if (f.isAnnotationPresent(annotationClass)) {
+                    result.add(f);
+                }
+            }
+            aClass = aClass.getSuperclass();
+        }
+        return result;
     }
 
     public static void main(String[] args) {

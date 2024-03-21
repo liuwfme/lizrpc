@@ -7,6 +7,7 @@ import cn.liz.lizrpc.core.api.Router;
 import cn.liz.lizrpc.core.api.RpcContext;
 import cn.liz.lizrpc.core.registry.ChangedListener;
 import cn.liz.lizrpc.core.registry.Event;
+import cn.liz.lizrpc.core.util.MethodUtils;
 import lombok.Data;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.context.ApplicationContext;
@@ -53,7 +54,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
 //            if (!name.contains("lizrpcDemoConsumerApplication")) continue;
 
-            List<Field> fields = findAnnotatedField(bean.getClass());
+            List<Field> fields = MethodUtils.findAnnotatedField(bean.getClass(), LizConsumer.class);
 
             fields.stream().forEach(f -> {
                 System.out.println("===>" + f.getName());
@@ -99,18 +100,5 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                 new Class[]{service}, new LizInvocationHandler(service, context, providers));
     }
 
-    private List<Field> findAnnotatedField(Class<?> aClass) {
-        List<Field> result = new ArrayList<>();
-        while (aClass != null) {
-            Field[] fields = aClass.getDeclaredFields();
-            for (Field f : fields) {
-                if (f.isAnnotationPresent(LizConsumer.class)) {
-                    result.add(f);
-                }
-            }
-            aClass = aClass.getSuperclass();
-        }
-        return result;
-    }
 
 }

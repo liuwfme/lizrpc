@@ -1,10 +1,13 @@
 package cn.liz.lizrpc.core.util;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import java.lang.reflect.Array;
-import java.util.HashMap;
-import java.util.List;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
 
 public class TypeUtils {
     public static Object cast(Object origin, Class<?> type) {
@@ -65,7 +68,64 @@ public class TypeUtils {
         if (type.equals(Boolean.class) || type.equals(Boolean.TYPE)) {
             return Boolean.valueOf(origin.toString());
         }
-
         return null;
+    }
+
+    public static Object castMethodResult(Method method, Object data) {
+        Class<?> type = method.getReturnType();
+        System.out.println("method.returnType : " + type);
+        if (data instanceof JSONObject jsonResult) {
+            if (Map.class.isAssignableFrom(type)) {
+                Map returnMap = new HashMap();
+                Type genericReturnType = method.getGenericReturnType();
+                System.out.println("genericReturnType : " + genericReturnType);
+                if (genericReturnType instanceof ParameterizedType parameterizedType) {
+                    Class<?> keyType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+                    Class<?> valueType = (Class<?>) parameterizedType.getActualTypeArguments()[1];
+                    System.out.println("keyType : " + keyType);
+                    System.out.println("valueType : " + valueType);
+                    jsonResult.entrySet().stream().forEach(e -> {
+                        Object key = TypeUtils.cast(e.getKey(), keyType);
+                        Object value = TypeUtils.cast(e.getValue(), valueType);
+                        returnMap.put(key, value);
+                    });
+                }
+                return returnMap;
+            }
+            return jsonResult.toJavaObject(type);
+        } else if (data instanceof JSONArray jsonArray) {
+            Object[] array = jsonArray.toArray();
+            if (type.isArray()) {
+                Class<?> componentType = type.getComponentType();
+                Object returnArray = Array.newInstance(componentType, array.length);
+                for (int i = 0; i < array.length; i++) {
+                    if (componentType.isPrimitive() || componentType.getPackageName().startsWith("java")) {
+                        Array.set(returnArray, i, array[i]);
+                    } else {
+                        Object obj = TypeUtils.cast(array[i], componentType);
+                        Array.set(returnArray, i, obj);
+                    }
+                }
+                return returnArray;
+            } else if (List.class.isAssignableFrom(type)) {
+                List<Object> resultList = new ArrayList<>(array.length);
+                Type genericReturnType = method.getGenericReturnType();
+                System.out.println("genericReturnType : " + genericReturnType);
+                if (genericReturnType instanceof ParameterizedType parameterizedType) {
+                    Type actualType = parameterizedType.getActualTypeArguments()[0];
+                    System.out.println("actualType : " + actualType);
+                    for (Object obj : array) {
+                        resultList.add(TypeUtils.cast(obj, (Class<?>) actualType));
+                    }
+                } else {
+                    resultList.addAll(Arrays.asList(array));
+                }
+                return resultList;
+            } else {
+                return null;
+            }
+        } else {
+            return TypeUtils.cast(data, type);
+        }
     }
 }

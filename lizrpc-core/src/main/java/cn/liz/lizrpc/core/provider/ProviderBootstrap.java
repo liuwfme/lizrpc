@@ -85,7 +85,6 @@ public class ProviderBootstrap implements ApplicationContextAware {
                     }
                 }
         );
-//        skeleton.put(interfacee.getCanonicalName(), x);
     }
 
     private void createProvider(Class<?> interfacee, Object x, Method method) {
@@ -97,12 +96,4 @@ public class ProviderBootstrap implements ApplicationContextAware {
         skeleton.add(interfacee.getCanonicalName(), meta);
     }
 
-    private Method findMethod(Class<?> aClass, String methodName) {
-        for (Method method : aClass.getMethods()) {
-            if (methodName.equals(method.getName())) {// 因为可能有多个重名方法
-                return method;
-            }
-        }
-        return null;
-    }
 }
