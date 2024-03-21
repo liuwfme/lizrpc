@@ -2,8 +2,8 @@ package cn.liz.lizrpc.demo.provider;
 
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
-import cn.liz.lizrpc.core.provider.ProviderBootstrap;
 import cn.liz.lizrpc.core.provider.ProviderConfig;
+import cn.liz.lizrpc.core.provider.ProviderInvoker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -26,12 +26,11 @@ public class LizrpcDemoProviderApplication {
     //使用HTTP+JSON来实现序列化和通信
 
     @Autowired
-    ProviderBootstrap providerBootstrap;
+    ProviderInvoker providerInvoker;
 
     @RequestMapping("/")
-    public RpcResponse invoke(@RequestBody RpcRequest request) {
-//        return invokeRequest(request);
-        return providerBootstrap.invoke(request);
+    public RpcResponse<Object> invoke(@RequestBody RpcRequest request) {
+        return providerInvoker.invoke(request);
     }
 
     @Bean
@@ -41,14 +40,14 @@ public class LizrpcDemoProviderApplication {
             request.setService("cn.liz.lizrpc.demo.api.UserService");
             request.setMethodSign("findById@1_int");
             request.setArgs(new Object[]{100});
-            RpcResponse response = invoke(request);
+            RpcResponse<Object> response = invoke(request);
             System.out.println("return : " + response.getData());
 
             RpcRequest request1 = new RpcRequest();
             request1.setService("cn.liz.lizrpc.demo.api.UserService");
             request1.setMethodSign("findById@2_int_java.lang.String");
             request1.setArgs(new Object[]{100, "lwf"});
-            RpcResponse response1 = invoke(request1);
+            RpcResponse<Object> response1 = invoke(request1);
             System.out.println("return : " + response1.getData());
 
         };

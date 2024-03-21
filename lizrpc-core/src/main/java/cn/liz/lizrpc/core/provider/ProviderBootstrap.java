@@ -97,47 +97,6 @@ public class ProviderBootstrap implements ApplicationContextAware {
         skeleton.add(interfacee.getCanonicalName(), meta);
     }
 
-    public RpcResponse invoke(RpcRequest request) {
-//        if (MethodUtils.checkLocalMethod(methodSign)) {
-//            return null;
-//        }
-        RpcResponse rpcResponse = new RpcResponse();
-        List<ProviderMeta> providerMetas = skeleton.get(request.getService());
-        try {
-//            Method method = bean.getClass().getMethod(request.getMethod());
-//            Method method = findMethod(bean.getClass(), request.getMethodSign());
-            ProviderMeta meta = findProviderMeta(providerMetas, request.getMethodSign());
-            Method method = meta.getMethod();
-//            Object result = method.invoke(meta.getServiceImpl(), request.getArgs());
-            Object[] args = processArgs(request.getArgs(), method.getParameterTypes());
-            Object result = method.invoke(meta.getServiceImpl(), args);
-
-            rpcResponse.setStatus(true);
-            rpcResponse.setData(result);
-            return rpcResponse;
-        } catch (InvocationTargetException e) {
-            rpcResponse.setEx(new RuntimeException(e.getTargetException().getMessage()));
-        } catch (IllegalAccessException e) {
-            rpcResponse.setEx(new RuntimeException(e.getMessage()));
-        }
-        return rpcResponse;
-    }
-
-    private Object[] processArgs(Object[] args, Class<?>[] parameterTypes) {
-        if (args == null || args.length == 0) return args;
-        Object[] actualArgs = new Object[args.length];
-        for (int i = 0; i < args.length; i++) {
-            actualArgs[i] = TypeUtils.cast(args[i], parameterTypes[i]);
-        }
-        return actualArgs;
-    }
-
-    private ProviderMeta findProviderMeta(List<ProviderMeta> providerMetas, String methodSign) {
-        Optional<ProviderMeta> optional = providerMetas.stream()
-                .filter(x -> x.getMethodSign().equals(methodSign)).findFirst();
-        return optional.orElse(null);
-    }
-
     private Method findMethod(Class<?> aClass, String methodName) {
         for (Method method : aClass.getMethods()) {
             if (methodName.equals(method.getName())) {// 因为可能有多个重名方法
