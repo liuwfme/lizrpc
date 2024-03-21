@@ -5,6 +5,7 @@ import cn.liz.lizrpc.core.api.LoadBalancer;
 import cn.liz.lizrpc.core.api.RegistryCenter;
 import cn.liz.lizrpc.core.api.Router;
 import cn.liz.lizrpc.core.api.RpcContext;
+import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.util.MethodUtils;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
@@ -17,7 +18,6 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 消费者启动类
@@ -66,25 +66,18 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
     private Object createFromARegistry(Class<?> service, RpcContext context, RegistryCenter rc) {
         String serviceName = service.getCanonicalName();
-        List<String> providers = mapUrl(rc.fetchAll(serviceName));
+        List<InstanceMeta> providers = rc.fetchAll(serviceName);
         System.out.println("===> map to providers : ");
         providers.forEach(System.out::println);
 
         rc.subscribe(serviceName, event -> {
             providers.clear();
-            providers.addAll(mapUrl(event.getData()));
+            providers.addAll(event.getData());
         });
-
         return createConsumer(service, context, providers);
     }
 
-    private List<String> mapUrl(List<String> nodes) {
-        return nodes.stream()
-                .map(x -> "http://" + x.replace('_', ':'))
-                .collect(Collectors.toList());
-    }
-
-    private Object createConsumer(Class<?> service, RpcContext context, List<String> providers) {
+    private Object createConsumer(Class<?> service, RpcContext context, List<InstanceMeta> providers) {
         return Proxy.newProxyInstance(service.getClassLoader(),
                 new Class[]{service}, new LizInvocationHandler(service, context, providers));
     }

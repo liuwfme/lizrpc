@@ -2,6 +2,7 @@ package cn.liz.lizrpc.core.provider;
 
 import cn.liz.lizrpc.core.annotation.LizProvider;
 import cn.liz.lizrpc.core.api.RegistryCenter;
+import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.meta.ProviderMeta;
 import cn.liz.lizrpc.core.util.MethodUtils;
 import jakarta.annotation.PostConstruct;
@@ -30,7 +31,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private MultiValueMap<String, ProviderMeta> skeleton = new LinkedMultiValueMap<>();
 
-    private String instance;
+    private InstanceMeta instance;
 
     @Value("${server.port}")
     private String port;
@@ -47,7 +48,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @SneakyThrows
     public void start() {
         String ip = InetAddress.getLocalHost().getHostAddress();
-        instance = ip + "_" + port;
+        instance = InstanceMeta.http(ip, Integer.valueOf(port));
         rc.start();
         skeleton.keySet().forEach(this::registerService);
     }

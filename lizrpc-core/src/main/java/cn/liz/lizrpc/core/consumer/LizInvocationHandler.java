@@ -4,6 +4,7 @@ import cn.liz.lizrpc.core.api.RpcContext;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
 import cn.liz.lizrpc.core.consumer.http.OkHttpInvoker;
+import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.util.MethodUtils;
 import cn.liz.lizrpc.core.util.TypeUtils;
 
@@ -18,11 +19,11 @@ public class LizInvocationHandler implements InvocationHandler {
 
     Class<?> service;
     RpcContext context;
-    List<String> providers;
+    List<InstanceMeta> providers;
 
     HttpInvoker httpInvoker = new OkHttpInvoker();
 
-    public LizInvocationHandler(Class<?> clazz, RpcContext context, List<String> providers) {
+    public LizInvocationHandler(Class<?> clazz, RpcContext context, List<InstanceMeta> providers) {
         this.service = clazz;
         this.context = context;
         this.providers = providers;
@@ -38,10 +39,10 @@ public class LizInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
-        List<String> urls = context.getRouter().route(this.providers);
-        String url = (String) context.getLoadBalancer().choose(urls);
-        System.out.println("loadBalancer.choose(urls) ---> " + url);
-        RpcResponse<?> rpcResponse = httpInvoker.post(rpcRequest, url);
+        List<InstanceMeta> urls = context.getRouter().route(this.providers);
+        InstanceMeta instanceMeta = context.getLoadBalancer().choose(urls);
+        System.out.println("loadBalancer.choose(urls) ---> " + instanceMeta);
+        RpcResponse<?> rpcResponse = httpInvoker.post(rpcRequest, instanceMeta.toUrl());
         if (rpcResponse.isStatus()) {
             Object data = rpcResponse.getData();
             return TypeUtils.castMethodResult(method, data);
