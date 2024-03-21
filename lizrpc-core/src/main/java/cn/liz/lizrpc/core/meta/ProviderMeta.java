@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.lang.reflect.Method;
 
+/**
+ * 描述provider的映射关系
+ */
 @Data
 public class ProviderMeta {
 
