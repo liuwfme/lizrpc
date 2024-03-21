@@ -32,6 +32,8 @@ import java.util.Optional;
 public class ProviderBootstrap implements ApplicationContextAware {
     ApplicationContext applicationContext;
 
+    RegistryCenter rc;
+
     private MultiValueMap<String, ProviderMeta> skeleton = new LinkedMultiValueMap<>();
 
     private String instance;
@@ -41,11 +43,10 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
 
     @PostConstruct // init-method
-    // PreDestroy
     public void init() {
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(LizProvider.class);
+        rc = applicationContext.getBean(RegistryCenter.class);
         providers.forEach((x, y) -> System.out.println("beanName : " + x));
-//        skeleton.putAll(providers);
         providers.values().forEach(x -> genInterface(x));
     }
 
@@ -53,23 +54,23 @@ public class ProviderBootstrap implements ApplicationContextAware {
     public void start() {
         String ip = InetAddress.getLocalHost().getHostAddress();
         instance = ip + "_" + port;
+        rc.start();
         skeleton.keySet().forEach(this::registerService);
     }
 
     @PreDestroy
     public void stop() {
+        System.out.println(" ===> unregister all services");
         skeleton.keySet().forEach(this::unregisterService);
+        rc.stop();
+    }
+
+    private void registerService(String service) {
+        rc.register(service, instance);
     }
 
     private void unregisterService(String service) {
-        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
         rc.unregister(service, instance);
-    }
-
-
-    private void registerService(String service) {
-        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
-        rc.register(service, instance);
     }
 
     private void genInterface(Object x) {
