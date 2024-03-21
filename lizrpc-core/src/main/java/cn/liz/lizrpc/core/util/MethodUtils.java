@@ -1,7 +1,5 @@
 package cn.liz.lizrpc.core.util;
 
-import cn.liz.lizrpc.core.annotation.LizConsumer;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

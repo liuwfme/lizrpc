@@ -9,7 +9,6 @@ import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class ZkRegistryCenter implements RegistryCenter {

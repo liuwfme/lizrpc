@@ -5,11 +5,8 @@ import cn.liz.lizrpc.core.api.LoadBalancer;
 import cn.liz.lizrpc.core.api.RegistryCenter;
 import cn.liz.lizrpc.core.api.Router;
 import cn.liz.lizrpc.core.api.RpcContext;
-import cn.liz.lizrpc.core.registry.ChangedListener;
-import cn.liz.lizrpc.core.registry.Event;
 import cn.liz.lizrpc.core.util.MethodUtils;
 import lombok.Data;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -17,12 +14,14 @@ import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 消费者启动类
+ */
 @Data
 public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
 
@@ -51,9 +50,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         String[] names = applicationContext.getBeanDefinitionNames();
         for (String name : names) {
             Object bean = applicationContext.getBean(name);
-
 //            if (!name.contains("lizrpcDemoConsumerApplication")) continue;
-
             List<Field> fields = MethodUtils.findAnnotatedField(bean.getClass(), LizConsumer.class);
 
             fields.stream().forEach(f -> {
