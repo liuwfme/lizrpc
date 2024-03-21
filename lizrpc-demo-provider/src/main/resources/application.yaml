@@ -1,6 +1,10 @@
 server:
   port: 8081
 
+lizrpc:
+  zkServer: localhost:2181
+  zkRoot: lizrpc
+
 app:
   id: app1
   namespace: public

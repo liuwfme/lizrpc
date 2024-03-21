@@ -1,7 +1,10 @@
 server:
   port: 8088
+
 lizrpc:
   providers: http://localhost:8081,http://localhost:8082,http://localhost:8083
+  zkServer: localhost:2181
+  zkRoot: lizrpc
 
 app:
   id: app1
