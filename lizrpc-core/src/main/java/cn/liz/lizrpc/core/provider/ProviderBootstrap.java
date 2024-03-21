@@ -50,9 +50,9 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @PostConstruct // init-method
     public void init() {
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(LizProvider.class);
-        rc = applicationContext.getBean(RegistryCenter.class);
         providers.forEach((x, y) -> System.out.println("beanName : " + x));
-        providers.values().forEach(x -> genInterface(x));
+        providers.values().forEach(this::genInterface);
+        rc = applicationContext.getBean(RegistryCenter.class);
     }
 
     @SneakyThrows
@@ -82,27 +82,28 @@ public class ProviderBootstrap implements ApplicationContextAware {
         rc.unregister(serviceMeta, instance);
     }
 
-    private void genInterface(Object x) {
-        Arrays.stream(x.getClass().getInterfaces()).forEach(
-                itface -> {
-                    Method[] methods = itface.getMethods();
+    private void genInterface(Object impl) {
+        Arrays.stream(impl.getClass().getInterfaces()).forEach(
+                service -> {
+                    Method[] methods = service.getMethods();
                     for (Method method : methods) {
                         if (MethodUtils.checkLocalMethod(method)) {
                             continue;
                         }
-                        createProvider(itface, x, method);
+                        createProvider(service, impl, method);
                     }
                 }
         );
     }
 
-    private void createProvider(Class<?> interfacee, Object x, Method method) {
-        ProviderMeta meta = new ProviderMeta();
-        meta.setMethod(method);
-        meta.setServiceImpl(x);
-        meta.setMethodSign(MethodUtils.methodSign(method));
-        System.out.println("created a provider : " + meta);
-        skeleton.add(interfacee.getCanonicalName(), meta);
+    private void createProvider(Class<?> service, Object impl, Method method) {
+        ProviderMeta providerMeta = ProviderMeta.builder()
+                .serviceImpl(impl)
+                .method(method)
+                .methodSign(MethodUtils.methodSign(method))
+                .build();
+        System.out.println("created a provider : " + providerMeta);
+        skeleton.add(service.getCanonicalName(), providerMeta);
     }
 
 }
