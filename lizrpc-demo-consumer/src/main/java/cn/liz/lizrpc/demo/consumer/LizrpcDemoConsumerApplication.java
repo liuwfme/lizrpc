@@ -50,7 +50,7 @@ public class LizrpcDemoConsumerApplication {
     @Bean
     public ApplicationRunner consumer_runner() {
         return x -> {
-//            testAllCase();
+            testAllCase();
         };
     }
 
