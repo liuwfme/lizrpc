@@ -1,10 +1,7 @@
 package cn.liz.lizrpc.core.consumer;
 
 import cn.liz.lizrpc.core.annotation.LizConsumer;
-import cn.liz.lizrpc.core.api.LoadBalancer;
-import cn.liz.lizrpc.core.api.RegistryCenter;
-import cn.liz.lizrpc.core.api.Router;
-import cn.liz.lizrpc.core.api.RpcContext;
+import cn.liz.lizrpc.core.api.*;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.meta.ServiceMeta;
 import cn.liz.lizrpc.core.util.MethodUtils;
@@ -48,10 +45,12 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         Router<InstanceMeta> router = applicationContext.getBean(Router.class);
         LoadBalancer<InstanceMeta> loadBalancer = applicationContext.getBean(LoadBalancer.class);
         RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
+        List<Filter> filters = applicationContext.getBeansOfType(Filter.class).values().stream().toList();
 
         RpcContext context = new RpcContext();
         context.setRouter(router);
         context.setLoadBalancer(loadBalancer);
+        context.setFilters(filters);
 
         String[] names = applicationContext.getBeanDefinitionNames();
         for (String name : names) {

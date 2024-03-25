@@ -1,9 +1,11 @@
 package cn.liz.lizrpc.core.consumer;
 
+import cn.liz.lizrpc.core.api.Filter;
 import cn.liz.lizrpc.core.api.LoadBalancer;
 import cn.liz.lizrpc.core.api.RegistryCenter;
 import cn.liz.lizrpc.core.api.Router;
 import cn.liz.lizrpc.core.cluster.RoundRibonLoadBalancer;
+import cn.liz.lizrpc.core.filter.CacheFilter;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.registry.ZkRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
@@ -51,5 +53,10 @@ public class ConsumerConfig {
     public RegistryCenter consumer_rc() {
 //        return new RegistryCenter.StaticRegistryCenter(List.of(servers.split(",")));
         return new ZkRegistryCenter();
+    }
+
+    @Bean
+    public Filter filter() {
+        return new CacheFilter();
     }
 }

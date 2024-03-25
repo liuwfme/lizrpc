@@ -1,5 +1,6 @@
 package cn.liz.lizrpc.core.consumer;
 
+import cn.liz.lizrpc.core.api.Filter;
 import cn.liz.lizrpc.core.api.RpcContext;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
@@ -8,6 +9,7 @@ import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.util.MethodUtils;
 import cn.liz.lizrpc.core.util.TypeUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -41,10 +43,33 @@ public class LizInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
+        for (Filter filter : this.context.getFilters()) {
+            Object preResult = filter.preFilter(rpcRequest);
+            if (preResult != null) {
+                log.debug(filter.getClass().getName() + " ===> preFilter : " + preResult);
+                return preResult;
+            }
+        }
+
         List<InstanceMeta> urls = context.getRouter().route(this.providers);
         InstanceMeta instanceMeta = context.getLoadBalancer().choose(urls);
         log.debug("loadBalancer.choose(urls) ---> " + instanceMeta);
         RpcResponse<?> rpcResponse = httpInvoker.post(rpcRequest, instanceMeta.toUrl());
+
+        Object result = castReturnResult(method, rpcResponse);
+
+        for (Filter filter : this.context.getFilters()) {
+            Object filterResult = filter.postFilter(rpcRequest, rpcResponse, result);
+            if (filterResult != null) {
+                return filterResult;
+            }
+        }
+
+        return result;
+    }
+
+    @Nullable
+    private Object castReturnResult(Method method, RpcResponse<?> rpcResponse) {
         if (rpcResponse.isStatus()) {
             Object data = rpcResponse.getData();
             return TypeUtils.castMethodResult(method, data);
