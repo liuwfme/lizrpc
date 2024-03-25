@@ -7,19 +7,18 @@
         <artifactId>lizrpc</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
+
     <artifactId>lizrpc-demo-api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>lizrpc-demo-api</name>
     <description>lizrpc-demo-api</description>
-    <properties>
-        <java.version>17</java.version>
-    </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>1.18.30</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

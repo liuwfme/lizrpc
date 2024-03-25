@@ -7,13 +7,24 @@
         <artifactId>lizrpc</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
+
     <artifactId>lizrpc-demo-provider</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>lizrpc-demo-provider</name>
     <description>lizrpc-demo-provider</description>
-    <properties>
-        <java.version>17</java.version>
-    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${springboot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>cn.liz</groupId>
@@ -34,6 +45,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -56,6 +68,13 @@
                         </exclude>
                     </excludes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
