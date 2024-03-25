@@ -6,6 +6,7 @@ import cn.liz.lizrpc.core.api.RegistryCenter;
 import cn.liz.lizrpc.core.api.Router;
 import cn.liz.lizrpc.core.cluster.RoundRibonLoadBalancer;
 import cn.liz.lizrpc.core.filter.CacheFilter;
+import cn.liz.lizrpc.core.filter.MockFilter;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.registry.ZkRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
@@ -55,8 +56,13 @@ public class ConsumerConfig {
         return new ZkRegistryCenter();
     }
 
+//    @Bean
+//    public Filter filter1() {
+//        return new CacheFilter();
+//    }
+
     @Bean
-    public Filter filter() {
-        return new CacheFilter();
+    public Filter filter2() {
+        return new MockFilter();
     }
 }

@@ -87,13 +87,16 @@ public class ProviderBootstrap implements ApplicationContextAware {
     private void genInterface(Object impl) {
         Arrays.stream(impl.getClass().getInterfaces()).forEach(
                 service -> {
-                    Method[] methods = service.getMethods();
-                    for (Method method : methods) {
-                        if (MethodUtils.checkLocalMethod(method)) {
-                            continue;
-                        }
-                        createProvider(service, impl, method);
-                    }
+//                    Method[] methods = service.getMethods();
+//                    for (Method method : methods) {
+//                        if (MethodUtils.checkLocalMethod(method)) {
+//                            continue;
+//                        }
+//                        createProvider(service, impl, method);
+//                    }
+                    Arrays.stream(service.getMethods())
+                            .filter(method -> !MethodUtils.checkLocalMethod(method))
+                            .forEach(method -> createProvider(service, impl, method));
                 }
         );
     }
