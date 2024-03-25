@@ -86,4 +86,15 @@ public class UserServiceImpl implements UserService {
     public Boolean getFlag(boolean flag) {
         return !flag;
     }
+
+    @Override
+    public User findById(long id) {
+        return new User(Long.valueOf(id).intValue(), "Liz");
+    }
+
+    @Override
+    public User ex(boolean flag) {
+        if (flag) throw new RuntimeException("just throw an exception");
+        return new User(100, "Liz100");
+    }
 }
