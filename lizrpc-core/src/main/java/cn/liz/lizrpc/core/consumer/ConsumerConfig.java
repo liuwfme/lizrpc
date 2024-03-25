@@ -6,6 +6,7 @@ import cn.liz.lizrpc.core.api.Router;
 import cn.liz.lizrpc.core.cluster.RoundRibonLoadBalancer;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.registry.ZkRegistryCenter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
 @Configuration
+@Slf4j
 public class ConsumerConfig {
 
     @Value("${lizrpc.providers}")
@@ -28,9 +30,9 @@ public class ConsumerConfig {
     @Order(Integer.MIN_VALUE)
     public ApplicationRunner consumerBootstrap_runner(@Autowired ConsumerBootstrap consumerBootstrap) {
         return x -> {
-            System.out.println("consumerBootstrap starting ...");
+            log.info("consumerBootstrap starting ...");
             consumerBootstrap.start();
-            System.out.println("consumerBootstrap started ...");
+            log.info("consumerBootstrap started ...");
         };
     }
 

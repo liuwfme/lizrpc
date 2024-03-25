@@ -9,6 +9,7 @@ import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.meta.ServiceMeta;
 import cn.liz.lizrpc.core.util.MethodUtils;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -25,6 +26,7 @@ import java.util.Map;
  * 消费者启动类
  */
 @Data
+@Slf4j
 public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
 
     ApplicationContext applicationContext;
@@ -57,7 +59,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 //            if (!name.contains("lizrpcDemoConsumerApplication")) continue;
             List<Field> fields = MethodUtils.findAnnotatedField(bean.getClass(), LizConsumer.class);
             fields.stream().forEach(f -> {
-                System.out.println("===>" + f.getName());
+                log.info("===>" + f.getName());
                 try {
                     Class<?> service = f.getType();
                     String serviceName = service.getCanonicalName();
@@ -79,7 +81,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         ServiceMeta serviceMeta = ServiceMeta.builder()
                 .app(app).namespace(namespace).env(env).name(service.getCanonicalName()).build();
         List<InstanceMeta> providers = rc.fetchAll(serviceMeta);
-        System.out.println("===> map to providers : ");
+        log.info("===> map to providers : ");
         providers.forEach(System.out::println);
 
         rc.subscribe(serviceMeta, event -> {

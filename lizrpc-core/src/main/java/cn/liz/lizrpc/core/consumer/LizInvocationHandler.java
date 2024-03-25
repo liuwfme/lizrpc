@@ -7,6 +7,7 @@ import cn.liz.lizrpc.core.consumer.http.OkHttpInvoker;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.util.MethodUtils;
 import cn.liz.lizrpc.core.util.TypeUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -15,6 +16,7 @@ import java.util.List;
 /**
  * 消费端的动态代理处理类
  */
+@Slf4j
 public class LizInvocationHandler implements InvocationHandler {
 
     Class<?> service;
@@ -41,7 +43,7 @@ public class LizInvocationHandler implements InvocationHandler {
 
         List<InstanceMeta> urls = context.getRouter().route(this.providers);
         InstanceMeta instanceMeta = context.getLoadBalancer().choose(urls);
-        System.out.println("loadBalancer.choose(urls) ---> " + instanceMeta);
+        log.debug("loadBalancer.choose(urls) ---> " + instanceMeta);
         RpcResponse<?> rpcResponse = httpInvoker.post(rpcRequest, instanceMeta.toUrl());
         if (rpcResponse.isStatus()) {
             Object data = rpcResponse.getData();

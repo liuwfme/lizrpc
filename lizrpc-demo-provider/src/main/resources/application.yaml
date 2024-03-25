@@ -10,4 +10,9 @@ app:
   namespace: public
   env : dev
 
+logging:
+  level:
+    root: info
+    cn.liz.lizrpc: info
+
 
