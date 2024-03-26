@@ -13,6 +13,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,7 @@ public class ZkRegistryCenter implements RegistryCenter {
     private String zkRoot;
 
     private CuratorFramework client = null;
+    private List<TreeCache> caches = new ArrayList<>();
 
     @Override
     public void start() {
@@ -41,6 +43,8 @@ public class ZkRegistryCenter implements RegistryCenter {
 
     @Override
     public void stop() {
+        log.info(" ===> zk tree cache closed.");
+        caches.forEach(TreeCache::close);
         log.info(" ===> zk client stopping...");
         client.close();
     }
@@ -117,5 +121,6 @@ public class ZkRegistryCenter implements RegistryCenter {
                 }
         );
         cache.start();
+        caches.add(cache);
     }
 }
