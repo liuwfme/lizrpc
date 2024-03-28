@@ -1,5 +1,6 @@
 package cn.liz.lizrpc.core.consumer.http;
 
+import cn.liz.lizrpc.core.api.RpcException;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
 import cn.liz.lizrpc.core.consumer.HttpInvoker;
@@ -17,12 +18,12 @@ public class OkHttpInvoker implements HttpInvoker {
 
     OkHttpClient client;
 
-    public OkHttpInvoker() {
+    public OkHttpInvoker(int timeout) {
         client = new OkHttpClient.Builder()
                 .connectionPool(new ConnectionPool(16, 60, TimeUnit.SECONDS))
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
-                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(timeout, TimeUnit.MILLISECONDS)
+                .writeTimeout(timeout, TimeUnit.MILLISECONDS)
+                .connectTimeout(timeout, TimeUnit.MILLISECONDS)
                 .build();
     }
 
@@ -39,9 +40,9 @@ public class OkHttpInvoker implements HttpInvoker {
             log.debug("===> respJson = " + respJson);
             RpcResponse<Object> rpcResponse = JSON.parseObject(respJson, RpcResponse.class);
             return rpcResponse;
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+//            e.printStackTrace();
+            throw new RpcException(e, RpcException.ErrCodeEnum.SocketTimeout.getCode());
         }
     }
 }

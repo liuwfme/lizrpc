@@ -81,7 +81,7 @@ public class ZkRegistryCenter implements RegistryCenter {
 //            client.delete().forPath(instancePath);
             client.delete().quietly().forPath(instancePath);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RpcException(e);
         }
     }
 
@@ -95,7 +95,7 @@ public class ZkRegistryCenter implements RegistryCenter {
             nodes.forEach(System.out::println);
             return mapInstances(nodes);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RpcException(e);
         }
     }
 

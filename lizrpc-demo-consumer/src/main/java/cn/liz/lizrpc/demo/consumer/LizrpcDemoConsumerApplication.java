@@ -2,7 +2,6 @@ package cn.liz.lizrpc.demo.consumer;
 
 import cn.liz.lizrpc.core.annotation.LizConsumer;
 import cn.liz.lizrpc.core.consumer.ConsumerConfig;
-import cn.liz.lizrpc.demo.api.OrderService;
 import cn.liz.lizrpc.demo.api.User;
 import cn.liz.lizrpc.demo.api.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +31,8 @@ public class LizrpcDemoConsumerApplication {
     @LizConsumer
     UserService userService;
 
-    @LizConsumer
-    OrderService orderService;
+//    @LizConsumer
+//    OrderService orderService;
 
     @Autowired
     Demo2 demo2;
@@ -43,6 +42,11 @@ public class LizrpcDemoConsumerApplication {
         return userService.findById(id);
     }
 
+    @RequestMapping("/findTimeout/")
+    public User find(@RequestParam("timeout") int timeout) {
+        return userService.findTimeout(timeout);
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(LizrpcDemoConsumerApplication.class, args);
     }
@@ -50,8 +54,15 @@ public class LizrpcDemoConsumerApplication {
     @Bean
     public ApplicationRunner consumer_runner() {
         return x -> {
-            testAllCase();
+//            testAllCase();
+            testTimeout();
         };
+    }
+
+    private void testTimeout() {
+        long start = System.currentTimeMillis();
+        userService.findTimeout(1000);
+        System.out.println("userService.findTimeout(1000) cost : " + (System.currentTimeMillis() - start));
     }
 
     private void testAllCase() {

@@ -36,4 +36,5 @@ public interface UserService {
 
     User ex(boolean flag);
 
+    User findTimeout(int timeout);
 }

@@ -21,12 +21,13 @@ public class LizInvocationHandler implements InvocationHandler {
     RpcContext context;
     List<InstanceMeta> providers;
 
-    HttpInvoker httpInvoker = new OkHttpInvoker();
+    HttpInvoker httpInvoker;
 
     public LizInvocationHandler(Class<?> clazz, RpcContext context, List<InstanceMeta> providers) {
         this.service = clazz;
         this.context = context;
         this.providers = providers;
+        this.httpInvoker = new OkHttpInvoker(Integer.parseInt(context.getParameters().get("app.timeout")));
     }
 
     @Override
@@ -39,6 +40,21 @@ public class LizInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
+        int retries = Integer.parseInt(context.getParameters().getOrDefault("app.retries", "1"));
+        while (retries-- > 0) {
+            log.info("retries : " + retries);
+            try {
+                return rpcExecute(method, rpcRequest);
+            } catch (Exception e) {
+                if (!(e instanceof RpcException)) {
+                    throw e;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Object rpcExecute(Method method, RpcRequest rpcRequest) {
         for (Filter filter : this.context.getFilters()) {
             Object preResult = filter.preFilter(rpcRequest);
             if (preResult != null) {
