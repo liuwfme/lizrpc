@@ -55,12 +55,12 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>cn.liz</groupId>
-            <artifactId>lizrpc-demo-provider</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>test</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>cn.liz</groupId>-->
+<!--            <artifactId>lizrpc-demo-provider</artifactId>-->
+<!--            <version>0.0.1-SNAPSHOT</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>

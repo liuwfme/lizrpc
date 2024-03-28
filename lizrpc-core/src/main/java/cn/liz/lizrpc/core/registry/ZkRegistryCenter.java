@@ -1,6 +1,7 @@
 package cn.liz.lizrpc.core.registry;
 
 import cn.liz.lizrpc.core.api.RegistryCenter;
+import cn.liz.lizrpc.core.api.RpcException;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.meta.ServiceMeta;
 import lombok.SneakyThrows;
@@ -62,7 +63,7 @@ public class ZkRegistryCenter implements RegistryCenter {
             log.info("===> register to zk : " + instancePath);
             client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, "provider".getBytes());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RpcException(e);
         }
     }
 

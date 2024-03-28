@@ -1,9 +1,6 @@
 package cn.liz.lizrpc.core.consumer;
 
-import cn.liz.lizrpc.core.api.Filter;
-import cn.liz.lizrpc.core.api.RpcContext;
-import cn.liz.lizrpc.core.api.RpcRequest;
-import cn.liz.lizrpc.core.api.RpcResponse;
+import cn.liz.lizrpc.core.api.*;
 import cn.liz.lizrpc.core.consumer.http.OkHttpInvoker;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.util.MethodUtils;
@@ -73,7 +70,11 @@ public class LizInvocationHandler implements InvocationHandler {
             return TypeUtils.castMethodResult(method, data);
         } else {
             Exception ex = rpcResponse.getEx();
-            throw new RuntimeException(ex);
+            if (ex instanceof RpcException e) {
+                throw e;
+            } else {
+                throw new RpcException(ex, RpcException.ErrCodeEnum.Unknown.getCode());
+            }
         }
     }
 

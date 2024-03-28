@@ -1,5 +1,6 @@
 package cn.liz.lizrpc.core.provider;
 
+import cn.liz.lizrpc.core.api.RpcException;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
 import cn.liz.lizrpc.core.meta.ProviderMeta;
@@ -32,9 +33,9 @@ public class ProviderInvoker {
             rpcResponse.setData(result);
             return rpcResponse;
         } catch (InvocationTargetException e) {
-            rpcResponse.setEx(new RuntimeException(e.getTargetException().getMessage()));
+            rpcResponse.setEx(new RpcException(e.getTargetException().getMessage()));
         } catch (IllegalAccessException e) {
-            rpcResponse.setEx(new RuntimeException(e.getMessage()));
+            rpcResponse.setEx(new RpcException(e.getMessage()));
         }
         return rpcResponse;
     }
