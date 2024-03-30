@@ -2,6 +2,7 @@ package cn.liz.lizrpc.core.consumer;
 
 import cn.liz.lizrpc.core.api.*;
 import cn.liz.lizrpc.core.consumer.http.OkHttpInvoker;
+import cn.liz.lizrpc.core.governance.SlidingTimeWindow;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.util.MethodUtils;
 import cn.liz.lizrpc.core.util.TypeUtils;
@@ -9,7 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 消费端的动态代理处理类
@@ -19,7 +26,15 @@ public class LizInvocationHandler implements InvocationHandler {
 
     Class<?> service;
     RpcContext context;
-    List<InstanceMeta> providers;
+    final List<InstanceMeta> providers;
+
+    List<InstanceMeta> isolatedProviders = new ArrayList<>();
+
+    final List<InstanceMeta> halfOpenProviders = new ArrayList<>();
+
+    final Map<String, SlidingTimeWindow> windowMap = new HashMap<>();
+
+    ScheduledExecutorService executorService;
 
     HttpInvoker httpInvoker;
 
@@ -28,6 +43,14 @@ public class LizInvocationHandler implements InvocationHandler {
         this.context = context;
         this.providers = providers;
         this.httpInvoker = new OkHttpInvoker(Integer.parseInt(context.getParameters().get("app.timeout")));
+        executorService = Executors.newScheduledThreadPool(1);
+        executorService.scheduleWithFixedDelay(this::halfOpen, 10, 60, TimeUnit.SECONDS);
+    }
+
+    private void halfOpen() {
+        log.debug(" ===> halfOpen, isolatedProviders : {}", isolatedProviders);
+        halfOpenProviders.clear();
+        halfOpenProviders.addAll(isolatedProviders);
     }
 
     @Override
@@ -63,12 +86,44 @@ public class LizInvocationHandler implements InvocationHandler {
             }
         }
 
-        List<InstanceMeta> urls = context.getRouter().route(this.providers);
-        InstanceMeta instanceMeta = context.getLoadBalancer().choose(urls);
-        log.debug("loadBalancer.choose(urls) ---> " + instanceMeta);
-        RpcResponse<?> rpcResponse = httpInvoker.post(rpcRequest, instanceMeta.toUrl());
+        InstanceMeta instanceMeta;
+        synchronized (halfOpenProviders) {
+            if (halfOpenProviders.isEmpty()) {
+                List<InstanceMeta> urls = context.getRouter().route(this.providers);
+                instanceMeta = context.getLoadBalancer().choose(urls);
+                log.debug("loadBalancer.choose(urls) ---> " + instanceMeta);
+            } else {
+                instanceMeta = halfOpenProviders.remove(0);
+            }
+        }
 
-        Object result = castReturnResult(method, rpcResponse);
+        String url = instanceMeta.toUrl();
+        RpcResponse<?> rpcResponse;
+        Object result;
+        try {
+            rpcResponse = httpInvoker.post(rpcRequest, url);
+            result = castReturnResult(method, rpcResponse);
+        } catch (Exception e) {
+            // 统计和隔离故障
+            // 每一次异常记录一次，统计30s的异常数。滑动时间窗口。
+//            SlidingTimeWindow window = windowMap.putIfAbsent(url, new SlidingTimeWindow());
+            synchronized (windowMap) {
+                SlidingTimeWindow window = windowMap.get(url);
+                if (window == null) {
+                    window = new SlidingTimeWindow();
+                    windowMap.put(url, window);
+                }
+                window.record(System.currentTimeMillis());
+                log.debug("url : {} in window with : {}", url, window.getSum());
+                if (window.getSum() >= 10) {
+                    // 隔离故障
+                    isolate(instanceMeta);
+                }
+            }
+            // 故障恢复
+            recover(instanceMeta);
+            throw e;
+        }
 
         for (Filter filter : this.context.getFilters()) {
             Object filterResult = filter.postFilter(rpcRequest, rpcResponse, result);
@@ -78,6 +133,27 @@ public class LizInvocationHandler implements InvocationHandler {
         }
 
         return result;
+    }
+
+    private void recover(InstanceMeta instanceMeta) {
+        synchronized (providers) {
+            if (!providers.contains(instanceMeta)) {
+                isolatedProviders.remove(instanceMeta);
+                providers.add(instanceMeta);
+                log.debug("===> recover instanceMeta:{}, providers:{}, isolatedProviders:{}",
+                        instanceMeta, providers, isolatedProviders);
+            }
+        }
+    }
+
+    private void isolate(InstanceMeta instanceMeta) {
+        log.debug("==> isolate instanceMeta:{}", instanceMeta);
+
+        providers.remove(instanceMeta);
+        log.debug("===> isolate providers:{}", providers);
+
+        isolatedProviders.add(instanceMeta);
+        log.debug("===> isolate isolatedProviders:{}", isolatedProviders);
     }
 
     private Object castReturnResult(Method method, RpcResponse<?> rpcResponse) {
