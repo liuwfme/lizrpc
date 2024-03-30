@@ -34,8 +34,8 @@ public class LizrpcDemoConsumerApplication {
 //    @LizConsumer
 //    OrderService orderService;
 
-    @Autowired
-    Demo2 demo2;
+//    @Autowired
+//    Demo2 demo2;
 
     @RequestMapping("/")
     public User findById(@RequestParam("id") int id) {
@@ -54,15 +54,8 @@ public class LizrpcDemoConsumerApplication {
     @Bean
     public ApplicationRunner consumer_runner() {
         return x -> {
-//            testAllCase();
-            testTimeout();
+            testAllCase();
         };
-    }
-
-    private void testTimeout() {
-        long start = System.currentTimeMillis();
-        userService.findTimeout(1000);
-        System.out.println("userService.findTimeout(1000) cost : " + (System.currentTimeMillis() - start));
     }
 
     private void testAllCase() {
@@ -179,6 +172,15 @@ public class LizrpcDemoConsumerApplication {
         } catch (RuntimeException e) {
             System.out.println(" ===> exception: " + e.getMessage());
         }
+        System.out.println();
+
+        System.out.println("Case 18. >>===[测试服务端抛出一个超时重试后成功的场景]===");
+        // 超时设置的【漏斗原则】
+        // A 2000 -> B 1500 -> C 1200 -> D 1000
+        long start = System.currentTimeMillis();
+        userService.findTimeout(1100);
+        userService.findTimeout(1100);
+        System.out.println("userService.findTimeout(1000) cost : " + (System.currentTimeMillis() - start));
         System.out.println();
     }
 }

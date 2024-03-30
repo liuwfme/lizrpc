@@ -42,7 +42,8 @@ public class OkHttpInvoker implements HttpInvoker {
             return rpcResponse;
         } catch (Exception e) {
 //            e.printStackTrace();
-            throw new RpcException(e, RpcException.ErrCodeEnum.SocketTimeout.getCode());
+//            throw new RpcException(e, RpcException.ErrCodeEnum.SocketTimeout.getCode());
+            throw new RuntimeException(e);
         }
     }
 }

@@ -1,5 +1,8 @@
 package cn.liz.lizrpc.core.api;
 
+import lombok.Data;
+
+@Data
 public class RpcException extends RuntimeException {
     private String errCode;
 

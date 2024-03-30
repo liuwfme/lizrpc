@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +29,7 @@ public class LizInvocationHandler implements InvocationHandler {
     RpcContext context;
     final List<InstanceMeta> providers;
 
-    List<InstanceMeta> isolatedProviders = new ArrayList<>();
+    final List<InstanceMeta> isolatedProviders = new ArrayList<>();
 
     final List<InstanceMeta> halfOpenProviders = new ArrayList<>();
 
@@ -42,7 +43,8 @@ public class LizInvocationHandler implements InvocationHandler {
         this.service = clazz;
         this.context = context;
         this.providers = providers;
-        this.httpInvoker = new OkHttpInvoker(Integer.parseInt(context.getParameters().get("app.timeout")));
+        this.httpInvoker = new OkHttpInvoker(Integer.parseInt(context.getParameters()
+                .getOrDefault("app.timeout", "1000")));
         executorService = Executors.newScheduledThreadPool(1);
         executorService.scheduleWithFixedDelay(this::halfOpen, 10, 60, TimeUnit.SECONDS);
     }
@@ -69,7 +71,7 @@ public class LizInvocationHandler implements InvocationHandler {
             try {
                 return rpcExecute(method, rpcRequest);
             } catch (Exception e) {
-                if (!(e instanceof RpcException)) {
+                if (!(e.getCause() instanceof SocketTimeoutException)) {
                     throw e;
                 }
             }
@@ -89,11 +91,12 @@ public class LizInvocationHandler implements InvocationHandler {
         InstanceMeta instanceMeta;
         synchronized (halfOpenProviders) {
             if (halfOpenProviders.isEmpty()) {
-                List<InstanceMeta> urls = context.getRouter().route(this.providers);
-                instanceMeta = context.getLoadBalancer().choose(urls);
-                log.debug("loadBalancer.choose(urls) ---> " + instanceMeta);
+                List<InstanceMeta> instanceMetas = context.getRouter().route(this.providers);
+                instanceMeta = context.getLoadBalancer().choose(instanceMetas);
+                log.debug("loadBalancer.choose(instanceMetas) ---> " + instanceMeta);
             } else {
                 instanceMeta = halfOpenProviders.remove(0);
+                log.debug("check instance alive, instanceMeta : {}", instanceMeta);
             }
         }
 
@@ -106,7 +109,6 @@ public class LizInvocationHandler implements InvocationHandler {
         } catch (Exception e) {
             // 统计和隔离故障
             // 每一次异常记录一次，统计30s的异常数。滑动时间窗口。
-//            SlidingTimeWindow window = windowMap.putIfAbsent(url, new SlidingTimeWindow());
             synchronized (windowMap) {
                 SlidingTimeWindow window = windowMap.get(url);
                 if (window == null) {
@@ -120,10 +122,11 @@ public class LizInvocationHandler implements InvocationHandler {
                     isolate(instanceMeta);
                 }
             }
-            // 故障恢复
-            recover(instanceMeta);
             throw e;
         }
+
+        // 故障恢复
+        recover(instanceMeta);
 
         for (Filter filter : this.context.getFilters()) {
             Object filterResult = filter.postFilter(rpcRequest, rpcResponse, result);
@@ -140,7 +143,7 @@ public class LizInvocationHandler implements InvocationHandler {
             if (!providers.contains(instanceMeta)) {
                 isolatedProviders.remove(instanceMeta);
                 providers.add(instanceMeta);
-                log.debug("===> recover instanceMeta:{}, providers:{}, isolatedProviders:{}",
+                log.debug("===> recovered instanceMeta:{}, providers:{}, isolatedProviders:{}",
                         instanceMeta, providers, isolatedProviders);
             }
         }
@@ -158,8 +161,7 @@ public class LizInvocationHandler implements InvocationHandler {
 
     private Object castReturnResult(Method method, RpcResponse<?> rpcResponse) {
         if (rpcResponse.isStatus()) {
-            Object data = rpcResponse.getData();
-            return TypeUtils.castMethodResult(method, data);
+            return TypeUtils.castMethodResult(method, rpcResponse.getData());
         } else {
             Exception ex = rpcResponse.getEx();
             if (ex instanceof RpcException e) {

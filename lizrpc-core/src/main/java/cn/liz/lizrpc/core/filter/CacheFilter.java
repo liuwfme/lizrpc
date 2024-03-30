@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class CacheFilter implements Filter {
 
+    // guava cache, 容量和过期时间
     static Map<String, Object> cache = new ConcurrentHashMap<>();
 
     @Override

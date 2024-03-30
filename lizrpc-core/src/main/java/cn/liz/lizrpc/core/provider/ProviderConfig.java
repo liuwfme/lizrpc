@@ -1,7 +1,7 @@
 package cn.liz.lizrpc.core.provider;
 
 import cn.liz.lizrpc.core.api.RegistryCenter;
-import cn.liz.lizrpc.core.registry.ZkRegistryCenter;
+import cn.liz.lizrpc.core.registry.zk.ZkRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;

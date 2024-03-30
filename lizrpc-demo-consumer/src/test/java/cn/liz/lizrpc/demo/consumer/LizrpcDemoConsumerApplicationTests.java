@@ -14,14 +14,25 @@ class LizrpcDemoConsumerApplicationTests {
 
     static ApplicationContext context;
 
+    static ApplicationContext context2;
+
     static TestZKServer zkServer = new TestZKServer();
 
     @BeforeAll
     static void init() {
         System.out.println(" =============LizrpcDemoConsumerApplicationTests.init.start========================= ");
         zkServer.start();
+        System.out.println(" ====================================== ");
+
         context = SpringApplication.run(LizrpcDemoProviderApplication.class
                 , "--server.port=8094"
+                , "--lizrpc.zkServer=localhost:2182"
+                , "--logging.level.cn.liz.lizrpc=debug"
+        );
+        System.out.println(" ====================================== ");
+
+        context2 = SpringApplication.run(LizrpcDemoProviderApplication.class
+                , "--server.port=8095"
                 , "--lizrpc.zkServer=localhost:2182"
                 , "--logging.level.cn.liz.lizrpc=debug"
         );
@@ -37,6 +48,7 @@ class LizrpcDemoConsumerApplicationTests {
     static void destroy() {
         System.out.println(" =============LizrpcDemoConsumerApplicationTests.destroy.start========================= ");
         SpringApplication.exit(context, () -> 1);
+        SpringApplication.exit(context2, () -> 1);
         zkServer.stop();
         System.out.println(" =============LizrpcDemoConsumerApplicationTests.destroy.end========================= ");
     }
