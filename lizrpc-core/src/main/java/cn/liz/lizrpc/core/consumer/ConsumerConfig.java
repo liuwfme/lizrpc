@@ -4,6 +4,7 @@ import cn.liz.lizrpc.core.api.Filter;
 import cn.liz.lizrpc.core.api.LoadBalancer;
 import cn.liz.lizrpc.core.api.RegistryCenter;
 import cn.liz.lizrpc.core.api.Router;
+import cn.liz.lizrpc.core.cluster.GrayRouter;
 import cn.liz.lizrpc.core.cluster.RoundRibonLoadBalancer;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.registry.zk.ZkRegistryCenter;
@@ -22,6 +23,9 @@ public class ConsumerConfig {
 
     @Value("${lizrpc.providers}")
     String servers;
+
+    @Value("${app.grayRatio}")
+    private int grayRatio;
 
     @Bean
     ConsumerBootstrap createConsumerBootstrap() {
@@ -46,7 +50,8 @@ public class ConsumerConfig {
 
     @Bean
     public Router<InstanceMeta> router() {
-        return Router.Default;
+//        return Router.Default;
+        return new GrayRouter(grayRatio);
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")

@@ -13,6 +13,7 @@ import java.util.*;
 @Slf4j
 public class TypeUtils {
     public static Object cast(Object origin, Class<?> type) {
+        log.debug("origin type : {}, target type : {}", origin, type);
         if (origin == null) return null;
         Class<?> aClass = origin.getClass();
         if (type.isAssignableFrom(aClass)) {
@@ -74,16 +75,18 @@ public class TypeUtils {
     }
 
     public static Object castMethodResult(Method method, Object data) {
+        log.debug("castMethodResult method:{}, data:{}", method, data);
         Class<?> returnType = method.getReturnType();
         Type genericReturnType = method.getGenericReturnType();
         return castGeneric(data, returnType, genericReturnType);
     }
 
     public static Object castGeneric(Object data, Class<?> returnType, Type genericReturnType) {
-        log.debug("method.returnType : " + returnType);
-        log.debug("method.genericReturnType : " + genericReturnType);
-        if (data instanceof JSONObject jsonResult) {
+        log.debug("castGeneric data:{}, returnType:{}, genericReturnType:{}", data, returnType, genericReturnType);
+//        if (data instanceof JSONObject jsonResult) {
+        if (data instanceof Map map) {
             if (Map.class.isAssignableFrom(returnType)) {
+                log.debug("castGeneric map convert to map");
                 Map returnMap = new HashMap();
                 log.debug("genericReturnType : " + genericReturnType);
                 if (genericReturnType instanceof ParameterizedType parameterizedType) {
@@ -91,18 +94,28 @@ public class TypeUtils {
                     Class<?> valueType = (Class<?>) parameterizedType.getActualTypeArguments()[1];
                     log.debug("keyType : " + keyType);
                     log.debug("valueType : " + valueType);
-                    jsonResult.entrySet().stream().forEach(e -> {
-                        Object key = TypeUtils.cast(e.getKey(), keyType);
-                        Object value = TypeUtils.cast(e.getValue(), valueType);
+                    map.forEach((k, v) -> {
+                        Object key = TypeUtils.cast(k, keyType);
+                        Object value = TypeUtils.cast(v, valueType);
                         returnMap.put(key, value);
                     });
                 }
                 return returnMap;
             }
-            return jsonResult.toJavaObject(returnType);
+            if (data instanceof JSONObject jsonObject) {
+                log.debug("castGeneric JSONObject convert to JavaObject");
+                return jsonObject.toJavaObject(returnType);
+            } else if (!Map.class.isAssignableFrom(returnType)) {
+                log.debug("castGeneric map convert to JavaObject");
+                return new JSONObject(map).toJavaObject(returnType);
+            } else {
+                log.debug("castGeneric map convert to unknown");
+                return data;
+            }
         } else if (data instanceof List list) {
             Object[] array = list.toArray();
             if (returnType.isArray()) {
+                log.debug("castGeneric list convert to array");
                 Class<?> componentType = returnType.getComponentType();
                 Object returnArray = Array.newInstance(componentType, array.length);
                 for (int i = 0; i < array.length; i++) {
@@ -115,6 +128,7 @@ public class TypeUtils {
                 }
                 return returnArray;
             } else if (List.class.isAssignableFrom(returnType)) {
+                log.debug("castGeneric list convert to list");
                 List<Object> resultList = new ArrayList<>(array.length);
                 log.debug("genericReturnType : " + genericReturnType);
                 if (genericReturnType instanceof ParameterizedType parameterizedType) {

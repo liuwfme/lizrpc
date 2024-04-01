@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -116,9 +117,14 @@ public class ZkRegistryCenter implements RegistryCenter {
                 log.warn("client.getData().forPath exception, e: ", e);
                 throw new RuntimeException(e);
             }
-            HashMap params = JSON.parseObject(new String(bytes), HashMap.class);
-            params.forEach((k, v) -> log.info("k:{},v:{}", k, v));
-            instance.setParameters(params);
+//            HashMap params = JSON.parseObject(new String(bytes), HashMap.class);
+            Map<String, Object> params = JSON.parseObject(new String(bytes));
+            Map<String, String> stringParams = new HashMap<>();
+            params.forEach((k, v) -> {
+                log.info("mapInstances params k:{},v:{}", k, v);
+                stringParams.put(k, v == null ? null : v.toString());
+            });
+            instance.setParameters(stringParams);
             return instance;
         }).collect(Collectors.toList());
     }

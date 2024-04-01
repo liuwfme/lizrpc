@@ -5,6 +5,7 @@ import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
 import cn.liz.lizrpc.core.meta.ProviderMeta;
 import cn.liz.lizrpc.core.util.TypeUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
@@ -13,6 +14,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 public class ProviderInvoker {
 
     private MultiValueMap<String, ProviderMeta> skeleton;
@@ -34,11 +36,14 @@ public class ProviderInvoker {
             rpcResponse.setData(result);
             return rpcResponse;
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            log.warn("ProviderInvoker#invoke(), InvocationTargetException e: ", e);
             rpcResponse.setEx(new RpcException(e.getTargetException().getMessage()));
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            log.warn("ProviderInvoker#invoke(), IllegalException e: ", e);
             rpcResponse.setEx(new RpcException(e.getMessage()));
+        } catch (Exception e) {
+            log.warn("ProviderInvoker#invoke(), Exception e: ", e);
+            rpcResponse.setEx(new RpcException(RpcException.ErrCodeEnum.Unknown.getMessage()));
         }
         return rpcResponse;
     }

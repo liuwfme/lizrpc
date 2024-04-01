@@ -1,6 +1,8 @@
 package cn.liz.lizrpc.demo.consumer;
 
 import cn.liz.lizrpc.core.annotation.LizConsumer;
+import cn.liz.lizrpc.core.api.Router;
+import cn.liz.lizrpc.core.cluster.GrayRouter;
 import cn.liz.lizrpc.core.consumer.ConsumerConfig;
 import cn.liz.lizrpc.demo.api.User;
 import cn.liz.lizrpc.demo.api.UserService;
@@ -37,6 +39,9 @@ public class LizrpcDemoConsumerApplication {
 //    @Autowired
 //    Demo2 demo2;
 
+    @Autowired
+    Router grayRouter;
+
     @RequestMapping("/")
     public User findById(@RequestParam("id") int id) {
         return userService.findById(id);
@@ -45,6 +50,12 @@ public class LizrpcDemoConsumerApplication {
     @RequestMapping("/findTimeout/")
     public User find(@RequestParam("timeout") int timeout) {
         return userService.findTimeout(timeout);
+    }
+
+    @RequestMapping("/setGrayRatio/")
+    public String setGrayRatio(@RequestParam("grayRatio") int grayRatio) {
+        ((GrayRouter) grayRouter).setGrayRatio(grayRatio);
+        return "new grayRatio : " + grayRatio;
     }
 
     public static void main(String[] args) {
@@ -178,7 +189,6 @@ public class LizrpcDemoConsumerApplication {
         // 超时设置的【漏斗原则】
         // A 2000 -> B 1500 -> C 1200 -> D 1000
         long start = System.currentTimeMillis();
-        userService.findTimeout(1100);
         userService.findTimeout(1100);
         System.out.println("userService.findTimeout(1000) cost : " + (System.currentTimeMillis() - start));
         System.out.println();

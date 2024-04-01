@@ -28,6 +28,7 @@ class LizrpcDemoConsumerApplicationTests {
                 , "--server.port=8094"
                 , "--lizrpc.zkServer=localhost:2182"
                 , "--logging.level.cn.liz.lizrpc=debug"
+                , "--app.metas={dc:'bj',gray:'false',unit:'u001'}"
         );
         System.out.println(" ====================================== ");
 
@@ -35,6 +36,7 @@ class LizrpcDemoConsumerApplicationTests {
                 , "--server.port=8095"
                 , "--lizrpc.zkServer=localhost:2182"
                 , "--logging.level.cn.liz.lizrpc=debug"
+                , "--app.metas={dc:'bj',gray:'false',unit:'u001'}"
         );
         System.out.println(" =============LizrpcDemoConsumerApplicationTests.init.end========================= ");
     }
