@@ -74,12 +74,17 @@ public class TypeUtils {
     }
 
     public static Object castMethodResult(Method method, Object data) {
-        Class<?> type = method.getReturnType();
-        log.debug("method.returnType : " + type);
+        Class<?> returnType = method.getReturnType();
+        Type genericReturnType = method.getGenericReturnType();
+        return castGeneric(data, returnType, genericReturnType);
+    }
+
+    public static Object castGeneric(Object data, Class<?> returnType, Type genericReturnType) {
+        log.debug("method.returnType : " + returnType);
+        log.debug("method.genericReturnType : " + genericReturnType);
         if (data instanceof JSONObject jsonResult) {
-            if (Map.class.isAssignableFrom(type)) {
+            if (Map.class.isAssignableFrom(returnType)) {
                 Map returnMap = new HashMap();
-                Type genericReturnType = method.getGenericReturnType();
                 log.debug("genericReturnType : " + genericReturnType);
                 if (genericReturnType instanceof ParameterizedType parameterizedType) {
                     Class<?> keyType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
@@ -94,11 +99,11 @@ public class TypeUtils {
                 }
                 return returnMap;
             }
-            return jsonResult.toJavaObject(type);
-        } else if (data instanceof JSONArray jsonArray) {
-            Object[] array = jsonArray.toArray();
-            if (type.isArray()) {
-                Class<?> componentType = type.getComponentType();
+            return jsonResult.toJavaObject(returnType);
+        } else if (data instanceof List list) {
+            Object[] array = list.toArray();
+            if (returnType.isArray()) {
+                Class<?> componentType = returnType.getComponentType();
                 Object returnArray = Array.newInstance(componentType, array.length);
                 for (int i = 0; i < array.length; i++) {
                     if (componentType.isPrimitive() || componentType.getPackageName().startsWith("java")) {
@@ -109,9 +114,8 @@ public class TypeUtils {
                     }
                 }
                 return returnArray;
-            } else if (List.class.isAssignableFrom(type)) {
+            } else if (List.class.isAssignableFrom(returnType)) {
                 List<Object> resultList = new ArrayList<>(array.length);
-                Type genericReturnType = method.getGenericReturnType();
                 log.debug("genericReturnType : " + genericReturnType);
                 if (genericReturnType instanceof ParameterizedType parameterizedType) {
                     Type actualType = parameterizedType.getActualTypeArguments()[0];
@@ -127,7 +131,8 @@ public class TypeUtils {
                 return null;
             }
         } else {
-            return TypeUtils.cast(data, type);
+            return TypeUtils.cast(data, returnType);
         }
     }
+
 }

@@ -75,6 +75,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getList(List<User> userList) {
+        System.out.println("userList.getClass : " + userList.getClass());
+//        userList.forEach(s -> System.out.println("userList.foreach.getClass : " + s.getClass()));
+//        System.out.println("userList.get(0).getClass : " + userList.get(0).getClass());
+        User[] users = userList.toArray(new User[0]);
+        Arrays.stream(users).forEach(System.out::println);
+        userList.add(new User(303, "liz303"));
         return userList;
     }
 
