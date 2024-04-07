@@ -33,6 +33,7 @@ class LizrpcDemoConsumerApplicationTests {
                 , "--lizrpc.provider.metas.dc=bj"
                 , "--lizrpc.provider.metas.gray=false"
                 , "--lizrpc.provider.metas.unit=B001"
+                , "--lizrpc.provider.metas.tc=300"
         );
         System.out.println(" ====================================== ");
 
@@ -45,6 +46,7 @@ class LizrpcDemoConsumerApplicationTests {
                 , "--lizrpc.provider.metas.dc=bj"
                 , "--lizrpc.provider.metas.gray=false"
                 , "--lizrpc.provider.metas.unit=B002"
+                , "--lizrpc.provider.metas.tc=300"
         );
         System.out.println(" =============LizrpcDemoConsumerApplicationTests.init.end========================= ");
     }

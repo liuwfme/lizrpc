@@ -1,5 +1,6 @@
 package cn.liz.lizrpc.demo.provider;
 
+import cn.liz.lizrpc.core.api.RpcException;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
 import cn.liz.lizrpc.core.config.ProviderConfig;
@@ -107,6 +108,22 @@ public class LizrpcDemoProviderApplication {
         request4.setArgs(new Object[]{map});
         RpcResponse<Object> response4 = transport.invoke(request4);
         System.out.println("return : " + response4.getData());
+        System.out.println();
+
+        // test 5 for traffic control
+        System.out.println("Provider Case 5. >>===[复杂测试：测试流量并发控制]===");
+//        for (int i = 0; i < 120; i++) {
+//            try {
+//                Thread.sleep(1000);
+//                RpcResponse<Object> r = transport.invoke(request);
+//                System.out.println(i + " ***>>> " + r.getData());
+//            } catch (RpcException e) {
+//                // ignore
+//                System.out.println(i + " ***>>> " + e.getMessage() + " -> " + e.getErrCode());
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
         System.out.println();
 
     }

@@ -4,6 +4,7 @@ import cn.liz.lizrpc.core.api.RpcContext;
 import cn.liz.lizrpc.core.api.RpcException;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
+import cn.liz.lizrpc.core.governance.SlidingTimeWindow;
 import cn.liz.lizrpc.core.meta.ProviderMeta;
 import cn.liz.lizrpc.core.util.TypeUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +13,9 @@ import org.springframework.util.MultiValueMap;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -20,8 +23,16 @@ public class ProviderInvoker {
 
     private MultiValueMap<String, ProviderMeta> skeleton;
 
+    private final int trafficControl;
+
+    final Map<String, SlidingTimeWindow> windows = new HashMap<>();
+
+    final Map<String, String> metas;
+
     public ProviderInvoker(ProviderBootstrap providerBootstrap) {
         this.skeleton = providerBootstrap.getSkeleton();
+        this.metas = providerBootstrap.getProviderConfigProperties().getMetas();
+        this.trafficControl = Integer.parseInt(metas.getOrDefault("tc", "20"));
     }
 
     public RpcResponse<Object> invoke(RpcRequest request) {
@@ -32,7 +43,20 @@ public class ProviderInvoker {
             });
         }
         RpcResponse<Object> rpcResponse = new RpcResponse<>();
-        List<ProviderMeta> providerMetas = skeleton.get(request.getService());
+
+        String service = request.getService();
+        synchronized (windows) {
+            SlidingTimeWindow window = windows.computeIfAbsent(service, s -> new SlidingTimeWindow());
+            if (window.calcSum() >= trafficControl) {
+                log.warn("======ProviderInvoker.invoke window:{}", window);
+                throw new RpcException("service " + service + " invoked in 30s/[" +
+                        window.getSum() + "] larger than tpsLimit = " + trafficControl, RpcException.ErrCodeEnum.ExceedLimit.getCode());
+            }
+            window.record(System.currentTimeMillis());
+            log.info("service {} in window with {}", service, window.getSum());
+        }
+
+        List<ProviderMeta> providerMetas = skeleton.get(service);
         try {
             ProviderMeta meta = findProviderMeta(providerMetas, request.getMethodSign());
             Method method = meta.getMethod();

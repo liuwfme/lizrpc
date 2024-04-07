@@ -26,13 +26,20 @@ public class RpcException extends RuntimeException {
         this.errCode = errCode;
     }
 
+    public RpcException(String message, String errCode) {
+        super(message);
+        this.errCode = errCode;
+    }
+
     public enum ErrCodeEnum {
         // X 技术类异常
         // Y 业务类异常
         // Z unknown异常
         SocketTimeout("X001", "http_timeout"),
         NoSuchMethod("X002", "no_such_method"),
-        Unknown("Z001", "unknown");
+        ExceedLimit("X003","tps_exceed_limit"),
+        Unknown("Z001", "unknown")
+        ;
 
         String code;
 

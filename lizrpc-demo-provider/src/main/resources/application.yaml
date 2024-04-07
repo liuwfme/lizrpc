@@ -17,6 +17,7 @@ lizrpc:
       dc: bj
       gray: false
       unit: B001
+      tc: 300
 
 logging:
   level:
