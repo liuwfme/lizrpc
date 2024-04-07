@@ -44,9 +44,14 @@ public class LizInvocationHandler implements InvocationHandler {
         this.context = context;
         this.providers = providers;
         this.httpInvoker = new OkHttpInvoker(Integer.parseInt(context.getParameters()
-                .getOrDefault("app.timeout", "1000")));
+                .getOrDefault("consumer.timeout", "1000")));
+
         executorService = Executors.newScheduledThreadPool(1);
-        executorService.scheduleWithFixedDelay(this::halfOpen, 10, 60, TimeUnit.SECONDS);
+        int halfOpenInitialDelay = Integer.parseInt(context.getParameters()
+                .getOrDefault("consumer.halfOpenInitialDelay", "10000"));
+        int halfOpenDelay = Integer.parseInt(context.getParameters()
+                .getOrDefault("consumer.halfOpenDelay", "60000"));
+        executorService.scheduleWithFixedDelay(this::halfOpen, halfOpenInitialDelay, halfOpenDelay, TimeUnit.MILLISECONDS);
     }
 
     private void halfOpen() {
@@ -65,11 +70,12 @@ public class LizInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
-        int retries = Integer.parseInt(context.getParameters().getOrDefault("app.retries", "1"));
+        int retries = Integer.parseInt(context.getParameters().getOrDefault("consumer.retries", "1"));
+        int faultLimit = Integer.parseInt(context.getParameters().getOrDefault("consumer.faultLimit", "10"));
         while (retries-- > 0) {
             log.info("retries : " + retries);
             try {
-                return rpcExecute(method, rpcRequest);
+                return rpcExecute(method, rpcRequest, faultLimit);
             } catch (Exception e) {
                 if (!(e.getCause() instanceof SocketTimeoutException)) {
                     throw e;
@@ -79,7 +85,7 @@ public class LizInvocationHandler implements InvocationHandler {
         return null;
     }
 
-    private Object rpcExecute(Method method, RpcRequest rpcRequest) {
+    private Object rpcExecute(Method method, RpcRequest rpcRequest, int faultLimit) {
         for (Filter filter : this.context.getFilters()) {
             Object preResult = filter.preFilter(rpcRequest);
             if (preResult != null) {
@@ -117,7 +123,7 @@ public class LizInvocationHandler implements InvocationHandler {
                 }
                 window.record(System.currentTimeMillis());
                 log.debug("url : {} in window with : {}", url, window.getSum());
-                if (window.getSum() >= 10) {
+                if (window.getSum() >= faultLimit) {
                     // 隔离故障
                     isolate(instanceMeta);
                 }
@@ -163,12 +169,12 @@ public class LizInvocationHandler implements InvocationHandler {
         if (rpcResponse.isStatus()) {
             return TypeUtils.castMethodResult(method, rpcResponse.getData());
         } else {
-            Exception ex = rpcResponse.getEx();
-            if (ex instanceof RpcException e) {
-                throw e;
-            } else {
-                throw new RpcException(ex, RpcException.ErrCodeEnum.Unknown.getCode());
+            RpcException exception = rpcResponse.getEx();
+            log.error("rpcResponse error. e : ", exception);
+            if (exception != null) {
+                throw exception;
             }
+            return null;
         }
     }
 

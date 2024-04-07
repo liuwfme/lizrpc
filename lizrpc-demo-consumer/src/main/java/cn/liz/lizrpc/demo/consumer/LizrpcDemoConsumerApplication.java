@@ -3,7 +3,7 @@ package cn.liz.lizrpc.demo.consumer;
 import cn.liz.lizrpc.core.annotation.LizConsumer;
 import cn.liz.lizrpc.core.api.Router;
 import cn.liz.lizrpc.core.cluster.GrayRouter;
-import cn.liz.lizrpc.core.consumer.ConsumerConfig;
+import cn.liz.lizrpc.core.config.ConsumerConfig;
 import cn.liz.lizrpc.demo.api.User;
 import cn.liz.lizrpc.demo.api.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -26,17 +26,25 @@ class LizrpcDemoConsumerApplicationTests {
 
         context = SpringApplication.run(LizrpcDemoProviderApplication.class
                 , "--server.port=8094"
-                , "--lizrpc.zkServer=localhost:2182"
+                , "--lizrpc.zk.server=localhost:2182"
+                , "--lizrpc.app.env=test"
                 , "--logging.level.cn.liz.lizrpc=debug"
-                , "--app.metas={dc:'bj',gray:'false',unit:'u001'}"
+//                , "--app.metas={dc:'bj',gray:'false',unit:'u001'}"
+                , "--lizrpc.provider.metas.dc=bj"
+                , "--lizrpc.provider.metas.gray=false"
+                , "--lizrpc.provider.metas.unit=B001"
         );
         System.out.println(" ====================================== ");
 
         context2 = SpringApplication.run(LizrpcDemoProviderApplication.class
                 , "--server.port=8095"
-                , "--lizrpc.zkServer=localhost:2182"
+                , "--lizrpc.zk.server=localhost:2182"
+                , "--lizrpc.app.env=test"
                 , "--logging.level.cn.liz.lizrpc=debug"
-                , "--app.metas={dc:'bj',gray:'false',unit:'u001'}"
+//                , "--app.metas={dc:'bj',gray:'false',unit:'u001'}"
+                , "--lizrpc.provider.metas.dc=bj"
+                , "--lizrpc.provider.metas.gray=false"
+                , "--lizrpc.provider.metas.unit=B002"
         );
         System.out.println(" =============LizrpcDemoConsumerApplicationTests.init.end========================= ");
     }

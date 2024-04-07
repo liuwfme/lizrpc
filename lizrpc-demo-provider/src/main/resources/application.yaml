@@ -2,14 +2,21 @@ server:
   port: 8081
 
 lizrpc:
-  zkServer: localhost:2181
-  zkRoot: lizrpc
-
-app:
-  id: app1
-  namespace: public
-  env : dev
-  metas: "{'dc':'bj','unit':'u001','gray':'false'}"
+#  zkServer: localhost:2181
+#  zkRoot: lizrpc
+  zk:
+    server: localhost:2181
+    root: lizrpc
+  app:
+    id: app1
+    namespace: public
+    env : dev
+  provider:
+#    metas: "{'dc':'bj','unit':'u001','gray':'false'}"
+    metas:
+      dc: bj
+      gray: false
+      unit: B001
 
 logging:
   level:

@@ -1,21 +1,37 @@
-package cn.liz.lizrpc.core.provider;
+package cn.liz.lizrpc.core.config;
 
 import cn.liz.lizrpc.core.api.RegistryCenter;
+import cn.liz.lizrpc.core.provider.ProviderBootstrap;
+import cn.liz.lizrpc.core.provider.ProviderInvoker;
 import cn.liz.lizrpc.core.registry.zk.ZkRegistryCenter;
+import cn.liz.lizrpc.core.transport.SpringBootTransport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 
 @Configuration
 @Slf4j
+@Import({AppConfigProperties.class, ProviderConfigProperties.class, SpringBootTransport.class})
 public class ProviderConfig {
+
+    @Value("${server.port:8080}")
+    private String port;
+
+    @Autowired
+    AppConfigProperties appConfigProperties;
+
+    @Autowired
+    ProviderConfigProperties providerConfigProperties;
+
     @Bean
     ProviderBootstrap providerBootstrap() {
-        return new ProviderBootstrap();
+        return new ProviderBootstrap(port, appConfigProperties, providerConfigProperties);
     }
 
     @Bean

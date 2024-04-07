@@ -2,8 +2,8 @@ package cn.liz.lizrpc.demo.provider;
 
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
-import cn.liz.lizrpc.core.provider.ProviderConfig;
-import cn.liz.lizrpc.core.provider.ProviderInvoker;
+import cn.liz.lizrpc.core.config.ProviderConfig;
+import cn.liz.lizrpc.core.transport.SpringBootTransport;
 import cn.liz.lizrpc.demo.api.User;
 import cn.liz.lizrpc.demo.api.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,16 +32,19 @@ public class LizrpcDemoProviderApplication {
 
     //使用HTTP+JSON来实现序列化和通信
 
-    @Autowired
-    ProviderInvoker providerInvoker;
+//    @Autowired
+//    ProviderInvoker providerInvoker;
 
     @Autowired
     UserService userService;
 
-    @RequestMapping("/")
-    public RpcResponse<Object> invoke(@RequestBody RpcRequest request) {
-        return providerInvoker.invoke(request);
-    }
+    @Autowired
+    SpringBootTransport transport;
+
+//    @RequestMapping("/")
+//    public RpcResponse<Object> invoke(@RequestBody RpcRequest request) {
+//        return providerInvoker.invoke(request);
+//    }
 
     @RequestMapping("/setTimeoutPorts")
     public RpcResponse<String> setTimeoutPorts(@RequestParam("timeoutPorts") String timeoutPorts) {
@@ -67,7 +69,7 @@ public class LizrpcDemoProviderApplication {
         request.setService("cn.liz.lizrpc.demo.api.UserService");
         request.setMethodSign("findById@1_int");
         request.setArgs(new Object[]{100});
-        RpcResponse<Object> response = invoke(request);
+        RpcResponse<Object> response = transport.invoke(request);
         System.out.println("return : " + response.getData());
         System.out.println();
 
@@ -77,7 +79,7 @@ public class LizrpcDemoProviderApplication {
         request1.setService("cn.liz.lizrpc.demo.api.UserService");
         request1.setMethodSign("findById@2_int_java.lang.String");
         request1.setArgs(new Object[]{100, "lwf"});
-        RpcResponse<Object> response1 = invoke(request1);
+        RpcResponse<Object> response1 = transport.invoke(request1);
         System.out.println("return : " + response1.getData());
         System.out.println();
 
@@ -90,7 +92,7 @@ public class LizrpcDemoProviderApplication {
         list.add(new User(201, "liz201"));
         list.add(new User(202, "liz202"));
         request3.setArgs(new Object[]{list});
-        RpcResponse<Object> response3 = invoke(request3);
+        RpcResponse<Object> response3 = transport.invoke(request3);
         System.out.println("return : " + response3.getData());
         System.out.println();
 
@@ -103,7 +105,7 @@ public class LizrpcDemoProviderApplication {
         map.put("m301", new User(301, "liz301"));
         map.put("m302", new User(302, "liz302"));
         request4.setArgs(new Object[]{map});
-        RpcResponse<Object> response4 = invoke(request4);
+        RpcResponse<Object> response4 = transport.invoke(request4);
         System.out.println("return : " + response4.getData());
         System.out.println();
 

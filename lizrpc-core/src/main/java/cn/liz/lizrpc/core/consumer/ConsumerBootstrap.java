@@ -30,36 +30,35 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
     Environment environment;
 
-    @Value("${app.id}")
-    private String app;
-
-    @Value("${app.namespace}")
-    private String namespace;
-
-    @Value("${app.env}")
-    private String env;
-
-    @Value("${app.retries}")
-    private int retries;
-
-    @Value("${app.timeout}")
-    private int timeout;
+//    @Value("${app.id}")
+//    private String app;
+//
+//    @Value("${app.namespace}")
+//    private String namespace;
+//
+//    @Value("${app.env}")
+//    private String env;
+//
+//    @Value("${app.retries}")
+//    private int retries;
+//
+//    @Value("${app.timeout}")
+//    private int timeout;
 
     private Map<String, Object> stub = new HashMap<>();
 
     public void start() {
-        Router<InstanceMeta> router = applicationContext.getBean(Router.class);
-        LoadBalancer<InstanceMeta> loadBalancer = applicationContext.getBean(LoadBalancer.class);
         RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
-        List<Filter> filters = applicationContext.getBeansOfType(Filter.class).values().stream().toList();
-
-        RpcContext context = new RpcContext();
-        context.setRouter(router);
-        context.setLoadBalancer(loadBalancer);
-        context.setFilters(filters);
-
-        context.getParameters().put("app.retries", String.valueOf(retries));
-        context.getParameters().put("app.timeout", String.valueOf(timeout));
+//        Router<InstanceMeta> router = applicationContext.getBean(Router.class);
+//        LoadBalancer<InstanceMeta> loadBalancer = applicationContext.getBean(LoadBalancer.class);
+//        List<Filter> filters = applicationContext.getBeansOfType(Filter.class).values().stream().toList();
+//        RpcContext context = new RpcContext();
+//        context.setRouter(router);
+//        context.setLoadBalancer(loadBalancer);
+//        context.setFilters(filters);
+//        context.getParameters().put("app.retries", String.valueOf(retries));
+//        context.getParameters().put("app.timeout", String.valueOf(timeout));
+        RpcContext context = applicationContext.getBean(RpcContext.class);
 
         String[] names = applicationContext.getBeanDefinitionNames();
         for (String name : names) {
@@ -87,7 +86,9 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
     private Object createFromARegistry(Class<?> service, RpcContext context, RegistryCenter rc) {
         ServiceMeta serviceMeta = ServiceMeta.builder()
-                .app(app).namespace(namespace).env(env).name(service.getCanonicalName()).build();
+                .app(context.getParameters().get("app.id"))
+                .namespace(context.getParameters().get("app.namespace"))
+                .env(context.getParameters().get("app.env")).name(service.getCanonicalName()).build();
         List<InstanceMeta> providers = rc.fetchAll(serviceMeta);
         log.info("===> map to providers : ");
         providers.forEach(System.out::println);

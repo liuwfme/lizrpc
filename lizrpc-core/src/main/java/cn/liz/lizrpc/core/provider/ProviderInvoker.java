@@ -1,5 +1,6 @@
 package cn.liz.lizrpc.core.provider;
 
+import cn.liz.lizrpc.core.api.RpcContext;
 import cn.liz.lizrpc.core.api.RpcException;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
@@ -24,6 +25,12 @@ public class ProviderInvoker {
     }
 
     public RpcResponse<Object> invoke(RpcRequest request) {
+        log.info("======ProviderInvoker.invoke,request:{}", request);
+        if (!request.getParams().isEmpty()) {
+            request.getParams().forEach((k, v) -> {
+                RpcContext.setContextParameter(k, v);
+            });
+        }
         RpcResponse<Object> rpcResponse = new RpcResponse<>();
         List<ProviderMeta> providerMetas = skeleton.get(request.getService());
         try {
@@ -44,7 +51,10 @@ public class ProviderInvoker {
         } catch (Exception e) {
             log.warn("ProviderInvoker#invoke(), Exception e: ", e);
             rpcResponse.setEx(new RpcException(RpcException.ErrCodeEnum.Unknown.getMessage()));
+        } finally {
+            RpcContext.contextParameters.get().clear();
         }
+        log.debug(" ====== ProviderInvoker.invoke response : {}", rpcResponse);
         return rpcResponse;
     }
 

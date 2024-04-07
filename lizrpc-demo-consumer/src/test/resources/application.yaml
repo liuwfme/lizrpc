@@ -2,17 +2,23 @@ server:
   port: 8089
 
 lizrpc:
-  providers: http://localhost:8081,http://localhost:8082,http://localhost:8083
-  zkServer: localhost:2182
-  zkRoot: lizrpc
-
-app:
-  id: app1
-  namespace: public
-  env: dev
-  retries: 2
-  timeout: 1000
-  grayRatio: 50
+  #  providers: http://localhost:8081,http://localhost:8082,http://localhost:8083
+  #  zkServer: localhost:2182
+  #  zkRoot: lizrpc
+  zk:
+    server: localhost:2182
+    root: lizrpc
+  app:
+    id: app1
+    namespace: public
+    env: test
+  consumer:
+    retries: 2
+    timeout: 1000
+    grayRatio: 50
+    faultLimit: 10
+    halfOpenInitialDelay: 10000
+    halfOpenDelay: 60000
 
 logging:
   level:

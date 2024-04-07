@@ -2,6 +2,8 @@ package cn.liz.lizrpc.core.provider;
 
 import cn.liz.lizrpc.core.annotation.LizProvider;
 import cn.liz.lizrpc.core.api.RegistryCenter;
+import cn.liz.lizrpc.core.config.AppConfigProperties;
+import cn.liz.lizrpc.core.config.ProviderConfigProperties;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.meta.ProviderMeta;
 import cn.liz.lizrpc.core.meta.ServiceMeta;
@@ -29,27 +31,34 @@ import java.util.Map;
 @Slf4j
 public class ProviderBootstrap implements ApplicationContextAware {
     ApplicationContext applicationContext;
-
     RegistryCenter rc;
-
+    String port;
+    private AppConfigProperties appConfigProperties;
+    private ProviderConfigProperties providerConfigProperties;
     private MultiValueMap<String, ProviderMeta> skeleton = new LinkedMultiValueMap<>();
-
     private InstanceMeta instance;
 
-    @Value("${server.port}")
-    private String port;
+    public ProviderBootstrap(String port, AppConfigProperties appConfigProperties,
+                             ProviderConfigProperties providerConfigProperties) {
+        this.port = port;
+        this.appConfigProperties = appConfigProperties;
+        this.providerConfigProperties = providerConfigProperties;
+    }
 
-    @Value("${app.id}")
-    private String app;
-
-    @Value("${app.namespace}")
-    private String namespace;
-
-    @Value("${app.env}")
-    private String env;
-
-    @Value("#{${app.metas}}")//SpEL
-    Map<String, String> metas;
+//    @Value("${server.port}")
+//    private String port;
+//
+//    @Value("${app.id}")
+//    private String app;
+//
+//    @Value("${app.namespace}")
+//    private String namespace;
+//
+//    @Value("${app.env}")
+//    private String env;
+//
+//    @Value("#{${app.metas}}")//SpEL
+//    Map<String, String> metas;
 
     @PostConstruct // init-method
     public void init() {
@@ -62,8 +71,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @SneakyThrows
     public void start() {
         String ip = InetAddress.getLocalHost().getHostAddress();
-        instance = InstanceMeta.http(ip, Integer.valueOf(port));
-        instance.getParameters().putAll(metas);
+        instance = InstanceMeta.http(ip, Integer.valueOf(port)).addParams(providerConfigProperties.getMetas());
         rc.start();
         skeleton.keySet().forEach(this::registerService);
     }
@@ -77,13 +85,15 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private void registerService(String service) {
         ServiceMeta serviceMeta = ServiceMeta.builder()
-                .app(app).namespace(namespace).env(env).name(service).build();
+                .app(appConfigProperties.getId()).namespace(appConfigProperties.getNamespace())
+                .env(appConfigProperties.getEnv()).name(service).build();
         rc.register(serviceMeta, instance);
     }
 
     private void unregisterService(String service) {
         ServiceMeta serviceMeta = ServiceMeta.builder()
-                .app(app).namespace(namespace).env(env).name(service).build();
+                .app(appConfigProperties.getId()).namespace(appConfigProperties.getNamespace())
+                .env(appConfigProperties.getEnv()).name(service).build();
         rc.unregister(serviceMeta, instance);
     }
 

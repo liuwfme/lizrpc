@@ -26,10 +26,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ZkRegistryCenter implements RegistryCenter {
 
-    @Value("${lizrpc.zkServer}")
+    @Value("${lizrpc.zk.server:localhost:2181}")
     private String servers;
 
-    @Value("${lizrpc.zkRoot}")
+    @Value("${lizrpc.zk.root:lizrpc}")
     private String zkRoot;
 
     private CuratorFramework client = null;
@@ -122,9 +122,10 @@ public class ZkRegistryCenter implements RegistryCenter {
             Map<String, String> stringParams = new HashMap<>();
             params.forEach((k, v) -> {
                 log.info("mapInstances params k:{},v:{}", k, v);
-                stringParams.put(k, v == null ? null : v.toString());
+//                stringParams.put(k, v == null ? null : v.toString());
+                instance.getParameters().put(k, v == null ? null : v.toString());
             });
-            instance.setParameters(stringParams);
+//            instance.setParameters(stringParams);
             return instance;
         }).collect(Collectors.toList());
     }
