@@ -5,11 +5,11 @@
     <parent>
         <groupId>cn.liz</groupId>
         <artifactId>lizrpc</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${rpc.version}</version>
     </parent>
 
     <artifactId>lizrpc-demo-consumer</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${rpc.version}</version>
     <name>lizrpc-demo-consumer</name>
     <description>lizrpc-demo-consumer</description>
 
@@ -29,13 +29,13 @@
         <dependency>
             <groupId>cn.liz</groupId>
             <artifactId>lizrpc-demo-api</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${rpc.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>cn.liz</groupId>
             <artifactId>lizrpc-core</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${rpc.version}</version>
             <scope>compile</scope>
         </dependency>
 
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>cn.liz</groupId>
             <artifactId>lizrpc-demo-provider</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${rpc.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

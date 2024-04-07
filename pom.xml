@@ -11,7 +11,7 @@
 
     <groupId>cn.liz</groupId>
     <artifactId>lizrpc</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${rpc.version}</version>
 
     <name>lizrpc</name>
     <description>lizrpc</description>
@@ -19,6 +19,7 @@
     <packaging>pom</packaging>
 
     <properties>
+        <rpc.version>0.0.1-SNAPSHOT</rpc.version>
         <java.version>17</java.version>
         <springboot.version>3.2.3</springboot.version>
         <maven.compiler.source>17</maven.compiler.source>
@@ -31,5 +32,35 @@
         <module>lizrpc-demo-provider</module>
         <module>lizrpc-demo-consumer</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>oss</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <phase>clean</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
