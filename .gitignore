@@ -33,3 +33,4 @@ build/
 .vscode/
 /.java-version
 .DS_Store
+.flattened-pom.xml

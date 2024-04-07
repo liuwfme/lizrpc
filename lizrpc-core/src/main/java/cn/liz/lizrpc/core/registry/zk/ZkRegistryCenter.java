@@ -35,8 +35,14 @@ public class ZkRegistryCenter implements RegistryCenter {
     private CuratorFramework client = null;
     private List<TreeCache> caches = new ArrayList<>();
 
+    private boolean running = false;
+
     @Override
     public void start() {
+        if (running) {
+            log.info(" ===> zk client has started to server[" + servers + "/" + zkRoot + "], ignored.");
+            return;
+        }
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
         client = CuratorFrameworkFactory.builder()
                 .connectString(servers)
@@ -49,6 +55,10 @@ public class ZkRegistryCenter implements RegistryCenter {
 
     @Override
     public void stop() {
+        if (!running) {
+            log.info(" ===> zk client isn't running to server[" + servers + "/" + zkRoot + "], ignored.");
+            return;
+        }
         log.info(" ===> zk tree cache closed.");
         caches.forEach(TreeCache::close);
         log.info(" ===> zk client stopping...");
@@ -139,10 +149,14 @@ public class ZkRegistryCenter implements RegistryCenter {
                 .build();
         cache.getListenable().addListener(
                 (curator, event) -> {
-                    // 有任何节点变动，这里会执行
-                    log.info("zk subscribe event : " + event);
-                    List<InstanceMeta> nodes = fetchAll(service);
-                    listener.fire(new Event(nodes));
+                    synchronized (ZkRegistryCenter.class) {
+                        if (running) {
+                            // 有任何节点变动，这里会执行
+                            log.info("zk subscribe event : " + event);
+                            List<InstanceMeta> nodes = fetchAll(service);
+                            listener.fire(new Event(nodes));
+                        }
+                    }
                 }
         );
         cache.start();
