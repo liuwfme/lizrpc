@@ -4,6 +4,7 @@ import cn.liz.lizrpc.core.api.*;
 import cn.liz.lizrpc.core.cluster.GrayRouter;
 import cn.liz.lizrpc.core.cluster.RoundRibonLoadBalancer;
 import cn.liz.lizrpc.core.consumer.ConsumerBootstrap;
+import cn.liz.lizrpc.core.filter.ContextParameterFilter;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.registry.zk.ZkRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
@@ -71,7 +72,8 @@ public class ConsumerConfig {
 
     @Bean
     public Filter defaultFilter() {
-        return Filter.Default;
+//        return Filter.Default;
+        return new ContextParameterFilter();
     }
 
 //    @Bean
