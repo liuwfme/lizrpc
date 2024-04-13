@@ -51,6 +51,7 @@ public class ZkRegistryCenter implements RegistryCenter {
                 .build();
         log.info(" ===> zk client starting,, server[" + servers + "/" + zkRoot + "]");
         client.start();
+        running = true;
     }
 
     @Override
@@ -63,6 +64,7 @@ public class ZkRegistryCenter implements RegistryCenter {
         caches.forEach(TreeCache::close);
         log.info(" ===> zk client stopping...");
         client.close();
+        running = false;
     }
 
     @Override
