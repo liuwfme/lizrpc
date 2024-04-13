@@ -24,4 +24,23 @@ logging:
     root: info
     cn.liz.lizrpc: info
 
+app:
+  id: lizrpc-provider
+apollo:
+  cache-dir: /opt/data/
+  cluster: default
+  meta: http://localhost:8080 #http://kimmking.cn:8070
+  autoUpdateInjectedSpringProperties: true
+  bootstrap:
+    enabled: true
+    namespaces: lizrpc-provider,application
+    eagerLoad:
+      enabled: false
 
+a:
+  a1
+b:
+  b1
+
+timeoutPorts:
+  8082,8094

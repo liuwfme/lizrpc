@@ -20,7 +20,25 @@ lizrpc:
     halfOpenInitialDelay: 10000
     halfOpenDelay: 60000
 
+app:
+  id: lizrpc-consumer
+apollo:
+  cache-dir: /opt/data/
+  cluster: default
+  meta: http://localhost:8080 #http://kimmking.cn:8070
+  autoUpdateInjectedSpringProperties: true
+  bootstrap:
+    enabled: true
+    namespaces: lizrpc-consumer,application
+    eagerLoad:
+      enabled: false
+
+a:
+  aa1
+b:
+  bb2
+
 logging:
   level:
     root: info
-    cn.liz.lizrpc: debug
+    cn.liz.lizrpc: info

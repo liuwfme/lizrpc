@@ -54,4 +54,10 @@ public class ProviderConfig {
     public RegistryCenter provider_rc() {
         return new ZkRegistryCenter();
     }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ApolloChangedListener apolloChangedListener() {
+        return new ApolloChangedListener();
+    }
 }

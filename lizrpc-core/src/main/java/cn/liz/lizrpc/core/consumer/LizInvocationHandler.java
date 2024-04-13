@@ -43,19 +43,22 @@ public class LizInvocationHandler implements InvocationHandler {
         this.service = clazz;
         this.context = context;
         this.providers = providers;
-        this.httpInvoker = new OkHttpInvoker(Integer.parseInt(context.getParameters()
-                .getOrDefault("consumer.timeout", "1000")));
+        this.httpInvoker = new OkHttpInvoker(context.getConsumerConfigProperties().getTimeout()
+//                Integer.parseInt(context.getParameters().getOrDefault("consumer.timeout", "1000"))
+        );
 
         executorService = Executors.newScheduledThreadPool(1);
-        int halfOpenInitialDelay = Integer.parseInt(context.getParameters()
-                .getOrDefault("consumer.halfOpenInitialDelay", "10000"));
-        int halfOpenDelay = Integer.parseInt(context.getParameters()
-                .getOrDefault("consumer.halfOpenDelay", "60000"));
+        int halfOpenInitialDelay =
+//                Integer.parseInt(context.getParameters().getOrDefault("consumer.halfOpenInitialDelay", "10000"));
+                context.getConsumerConfigProperties().getHalfOpenInitialDelay();
+        int halfOpenDelay =
+//                Integer.parseInt(context.getParameters().getOrDefault("consumer.halfOpenDelay", "60000"));
+                context.getConsumerConfigProperties().getHalfOpenDelay();
         executorService.scheduleWithFixedDelay(this::halfOpen, halfOpenInitialDelay, halfOpenDelay, TimeUnit.MILLISECONDS);
     }
 
     private void halfOpen() {
-        log.debug(" ===> halfOpen, isolatedProviders : {}", isolatedProviders);
+        log.info(" ===> halfOpen, isolatedProviders : {}", isolatedProviders);
         halfOpenProviders.clear();
         halfOpenProviders.addAll(isolatedProviders);
     }
@@ -70,10 +73,12 @@ public class LizInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
-        int retries = Integer.parseInt(context.getParameters().getOrDefault("consumer.retries", "1"));
-        int faultLimit = Integer.parseInt(context.getParameters().getOrDefault("consumer.faultLimit", "10"));
+        int retries = //Integer.parseInt(context.getParameters().getOrDefault("consumer.retries", "1"));
+                context.getConsumerConfigProperties().getRetries();
+        int faultLimit = //Integer.parseInt(context.getParameters().getOrDefault("consumer.faultLimit", "10"));
+                context.getConsumerConfigProperties().getFaultLimit();
         while (retries-- > 0) {
-            log.info("retries : " + retries);
+            log.info("LizInvocationHandler#invoke retries : " + retries);
             try {
                 return rpcExecute(method, rpcRequest, faultLimit);
             } catch (Exception e) {
@@ -89,7 +94,7 @@ public class LizInvocationHandler implements InvocationHandler {
         for (Filter filter : this.context.getFilters()) {
             Object preResult = filter.preFilter(rpcRequest);
             if (preResult != null) {
-                log.debug(filter.getClass().getName() + " ===> preFilter : " + preResult);
+                log.info(filter.getClass().getName() + " ===> preFilter : " + preResult);
                 return preResult;
             }
         }
@@ -98,11 +103,12 @@ public class LizInvocationHandler implements InvocationHandler {
         synchronized (halfOpenProviders) {
             if (halfOpenProviders.isEmpty()) {
                 List<InstanceMeta> instanceMetas = context.getRouter().route(this.providers);
+                log.info("------instanceMetas{} ---> ", instanceMetas);
                 instanceMeta = context.getLoadBalancer().choose(instanceMetas);
-                log.debug("loadBalancer.choose(instanceMetas) ---> " + instanceMeta);
+                log.info("loadBalancer.choose(instanceMetas) ---> " + instanceMeta);
             } else {
                 instanceMeta = halfOpenProviders.remove(0);
-                log.debug("check instance alive, instanceMeta : {}", instanceMeta);
+                log.info("check instance alive, instanceMeta : {}", instanceMeta);
             }
         }
 
@@ -122,7 +128,7 @@ public class LizInvocationHandler implements InvocationHandler {
                     windowMap.put(url, window);
                 }
                 window.record(System.currentTimeMillis());
-                log.debug("url : {} in window with : {}", url, window.getSum());
+                log.info("url : {} in window with : {}", url, window.getSum());
                 if (window.getSum() >= faultLimit) {
                     // 隔离故障
                     isolate(instanceMeta);
@@ -149,20 +155,20 @@ public class LizInvocationHandler implements InvocationHandler {
             if (!providers.contains(instanceMeta)) {
                 isolatedProviders.remove(instanceMeta);
                 providers.add(instanceMeta);
-                log.debug("===> recovered instanceMeta:{}, providers:{}, isolatedProviders:{}",
+                log.info("===> recovered instanceMeta:{}, providers:{}, isolatedProviders:{}",
                         instanceMeta, providers, isolatedProviders);
             }
         }
     }
 
     private void isolate(InstanceMeta instanceMeta) {
-        log.debug("==> isolate instanceMeta:{}", instanceMeta);
+        log.info("==> isolate instanceMeta:{}", instanceMeta);
 
         providers.remove(instanceMeta);
-        log.debug("===> isolate providers:{}", providers);
+        log.info("===> isolate providers:{}", providers);
 
         isolatedProviders.add(instanceMeta);
-        log.debug("===> isolate isolatedProviders:{}", isolatedProviders);
+        log.info("===> isolate isolatedProviders:{}", isolatedProviders);
     }
 
     private Object castReturnResult(Method method, RpcResponse<?> rpcResponse) {

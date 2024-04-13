@@ -1,13 +1,13 @@
 package cn.liz.lizrpc.core.consumer;
 
 import cn.liz.lizrpc.core.annotation.LizConsumer;
-import cn.liz.lizrpc.core.api.*;
+import cn.liz.lizrpc.core.api.RegistryCenter;
+import cn.liz.lizrpc.core.api.RpcContext;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.meta.ServiceMeta;
 import cn.liz.lizrpc.core.util.MethodUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;

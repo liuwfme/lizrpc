@@ -9,9 +9,9 @@ import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.registry.zk.ZkRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -87,6 +87,7 @@ public class ConsumerConfig {
 //    }
 
     @Bean
+    @RefreshScope
     public RpcContext createContext(@Autowired Router router,
                                     @Autowired LoadBalancer loadBalancer,
                                     @Autowired List<Filter> filters) {
@@ -99,11 +100,18 @@ public class ConsumerConfig {
         context.getParameters().put("app.namespace", appConfigProperties.getNamespace());
         context.getParameters().put("app.env", appConfigProperties.getEnv());
 
-        context.getParameters().put("consumer.retries", String.valueOf(consumerConfigProperties.getRetries()));
-        context.getParameters().put("consumer.timeout", String.valueOf(consumerConfigProperties.getTimeout()));
-        context.getParameters().put("consumer.faultLimit", String.valueOf(consumerConfigProperties.getFaultLimit()));
-        context.getParameters().put("consumer.halfOpenInitialDelay", String.valueOf(consumerConfigProperties.getHalfOpenInitialDelay()));
-        context.getParameters().put("consumer.halfOpenDelay", String.valueOf(consumerConfigProperties.getHalfOpenDelay()));
+//        context.getParameters().put("consumer.retries", String.valueOf(consumerConfigProperties.getRetries()));
+//        context.getParameters().put("consumer.timeout", String.valueOf(consumerConfigProperties.getTimeout()));
+//        context.getParameters().put("consumer.faultLimit", String.valueOf(consumerConfigProperties.getFaultLimit()));
+//        context.getParameters().put("consumer.halfOpenInitialDelay", String.valueOf(consumerConfigProperties.getHalfOpenInitialDelay()));
+//        context.getParameters().put("consumer.halfOpenDelay", String.valueOf(consumerConfigProperties.getHalfOpenDelay()));
+        context.setConsumerConfigProperties(consumerConfigProperties);
         return context;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ApolloChangedListener apolloChangedListener() {
+        return new ApolloChangedListener();
     }
 }

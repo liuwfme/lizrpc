@@ -4,6 +4,7 @@ import cn.liz.lizrpc.core.api.RpcContext;
 import cn.liz.lizrpc.core.api.RpcException;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
+import cn.liz.lizrpc.core.config.ProviderConfigProperties;
 import cn.liz.lizrpc.core.governance.SlidingTimeWindow;
 import cn.liz.lizrpc.core.meta.ProviderMeta;
 import cn.liz.lizrpc.core.util.TypeUtils;
@@ -21,18 +22,21 @@ import java.util.Optional;
 @Slf4j
 public class ProviderInvoker {
 
-    private MultiValueMap<String, ProviderMeta> skeleton;
+    private final MultiValueMap<String, ProviderMeta> skeleton;
 
-    private final int trafficControl;
+    private final ProviderConfigProperties providerConfigProperties;
+
+//    private final int trafficControl;
 
     final Map<String, SlidingTimeWindow> windows = new HashMap<>();
 
-    final Map<String, String> metas;
+//    final Map<String, String> metas;
 
     public ProviderInvoker(ProviderBootstrap providerBootstrap) {
         this.skeleton = providerBootstrap.getSkeleton();
-        this.metas = providerBootstrap.getProviderConfigProperties().getMetas();
-        this.trafficControl = Integer.parseInt(metas.getOrDefault("tc", "20"));
+        this.providerConfigProperties = providerBootstrap.getProviderConfigProperties();
+//        this.metas = providerBootstrap.getProviderConfigProperties().getMetas();
+//        this.trafficControl = Integer.parseInt(metas.getOrDefault("tc", "20"));
     }
 
     public RpcResponse<Object> invoke(RpcRequest request) {
@@ -45,6 +49,8 @@ public class ProviderInvoker {
         RpcResponse<Object> rpcResponse = new RpcResponse<>();
 
         String service = request.getService();
+        int trafficControl = Integer.parseInt(providerConfigProperties.getMetas().getOrDefault("tc", "20"));
+        log.info("====== trafficControl:{}, service:{}", trafficControl, service);
         synchronized (windows) {
             SlidingTimeWindow window = windows.computeIfAbsent(service, s -> new SlidingTimeWindow());
             if (window.calcSum() >= trafficControl) {
@@ -78,7 +84,7 @@ public class ProviderInvoker {
         } finally {
             RpcContext.contextParameters.get().clear();
         }
-        log.debug(" ====== ProviderInvoker.invoke response : {}", rpcResponse);
+        log.info(" ====== ProviderInvoker.invoke response : {}", rpcResponse);
         return rpcResponse;
     }
 

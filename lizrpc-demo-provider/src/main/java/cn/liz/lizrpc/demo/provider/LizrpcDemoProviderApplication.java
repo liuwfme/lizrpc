@@ -1,18 +1,20 @@
 package cn.liz.lizrpc.demo.provider;
 
-import cn.liz.lizrpc.core.api.RpcException;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
 import cn.liz.lizrpc.core.config.ProviderConfig;
+import cn.liz.lizrpc.core.config.ProviderConfigProperties;
 import cn.liz.lizrpc.core.transport.SpringBootTransport;
 import cn.liz.lizrpc.demo.api.User;
 import cn.liz.lizrpc.demo.api.UserService;
+import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +26,7 @@ import java.util.Map;
 
 @SpringBootApplication
 @RestController
+//@EnableApolloConfig
 @Import({ProviderConfig.class})
 public class LizrpcDemoProviderApplication {
 
@@ -56,6 +59,28 @@ public class LizrpcDemoProviderApplication {
         return response;
     }
 
+    @Autowired
+    Environment environment;
+
+    @RequestMapping("/getConfVal")
+    public RpcResponse<String> getConfVal(@RequestParam("key") String key) {
+        RpcResponse<String> response = new RpcResponse<>();
+        response.setStatus(true);
+        response.setData("ok, key=" + key + ";value=" + environment.getProperty(key));
+        return response;
+    }
+
+    @Autowired
+    ProviderConfigProperties providerConfigProperties;
+
+    @RequestMapping("/meta")
+    public RpcResponse<String> getMetas() {
+        RpcResponse<String> response = new RpcResponse<>();
+        response.setStatus(true);
+        response.setData("ok, meta = " + providerConfigProperties.getMetas());
+        return response;
+    }
+
     @Bean
     ApplicationRunner providerRun() {
         return x -> {
@@ -64,6 +89,13 @@ public class LizrpcDemoProviderApplication {
     }
 
     private void testAll() {
+
+        String a = environment.getProperty("a");
+        System.out.println("======================================================");
+        System.out.println("--------a:" + a);
+        System.out.println("--------b:" + environment.getProperty("b"));
+        System.out.println("======================================================");
+
         //  test 1 parameter method
         System.out.println("Provider Case 1. >>===[基本测试：1个参数]===");
         RpcRequest request = new RpcRequest();
@@ -128,3 +160,5 @@ public class LizrpcDemoProviderApplication {
 
     }
 }
+
+

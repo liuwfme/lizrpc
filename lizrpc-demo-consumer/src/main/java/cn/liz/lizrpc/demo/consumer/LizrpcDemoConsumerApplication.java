@@ -2,10 +2,14 @@ package cn.liz.lizrpc.demo.consumer;
 
 import cn.liz.lizrpc.core.annotation.LizConsumer;
 import cn.liz.lizrpc.core.api.Router;
+import cn.liz.lizrpc.core.api.RpcContext;
+import cn.liz.lizrpc.core.api.RpcResponse;
 import cn.liz.lizrpc.core.cluster.GrayRouter;
 import cn.liz.lizrpc.core.config.ConsumerConfig;
+import cn.liz.lizrpc.core.config.ConsumerConfigProperties;
 import cn.liz.lizrpc.demo.api.User;
 import cn.liz.lizrpc.demo.api.UserService;
+import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -13,6 +17,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,8 +28,9 @@ import java.util.List;
 import java.util.Map;
 
 @SpringBootApplication
-@Import({ConsumerConfig.class})
 @RestController
+//@EnableApolloConfig
+@Import({ConsumerConfig.class})
 public class LizrpcDemoConsumerApplication {
 
     @Autowired
@@ -56,6 +62,28 @@ public class LizrpcDemoConsumerApplication {
     public String setGrayRatio(@RequestParam("grayRatio") int grayRatio) {
         ((GrayRouter) grayRouter).setGrayRatio(grayRatio);
         return "new grayRatio : " + grayRatio;
+    }
+
+    @Autowired
+    Environment environment;
+
+    @RequestMapping("/getConfVal")
+    public RpcResponse<String> getConfVal(@RequestParam("key") String key) {
+        RpcResponse<String> response = new RpcResponse<>();
+        response.setStatus(true);
+        response.setData("ok, key=" + key + ";value=" + environment.getProperty(key));
+        return response;
+    }
+
+    @Autowired
+    ConsumerConfigProperties consumerConfigProperties;
+
+    @RequestMapping("/consumerProperty")
+    public RpcResponse<String> consumerProperty() {
+        RpcResponse<String> response = new RpcResponse<>();
+        response.setStatus(true);
+        response.setData("ok, consumerProperty = " + consumerConfigProperties);
+        return response;
     }
 
     public static void main(String[] args) {
@@ -192,5 +220,20 @@ public class LizrpcDemoConsumerApplication {
         userService.findTimeout(1100);
         System.out.println("userService.findTimeout(1000) cost : " + (System.currentTimeMillis() - start));
         System.out.println();
+
+        System.out.println("Case 19. >>===[测试通过Context跨消费者和提供者进行传参]===");
+        String Key_Version = "rpc.version";
+        String Key_Message = "rpc.message";
+        RpcContext.setContextParameter(Key_Version, "v8");
+        RpcContext.setContextParameter(Key_Message, "this is a v8 message");
+        String version = userService.echoParameter(Key_Version);
+        System.out.println("---");
+        RpcContext.setContextParameter(Key_Version, "v9");
+        RpcContext.setContextParameter(Key_Message, "this is a v9 message");
+        String message = userService.echoParameter(Key_Message);
+        System.out.println(" ===> echo parameter from c->p->c: " + Key_Version + " -> " + version);
+        System.out.println(" ===> echo parameter from c->p->c: " + Key_Message + " -> " + message);
+        System.out.println();
+
     }
 }

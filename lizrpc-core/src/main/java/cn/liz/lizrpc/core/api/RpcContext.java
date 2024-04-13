@@ -1,5 +1,6 @@
 package cn.liz.lizrpc.core.api;
 
+import cn.liz.lizrpc.core.config.ConsumerConfigProperties;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import lombok.Data;
 
@@ -16,6 +17,8 @@ public class RpcContext {
     LoadBalancer<InstanceMeta> loadBalancer;
 
     private Map<String, String> parameters = new HashMap<>();
+
+    private ConsumerConfigProperties consumerConfigProperties;
 
     public static ThreadLocal<Map<String, String>> contextParameters = new ThreadLocal<>() {
         @Override

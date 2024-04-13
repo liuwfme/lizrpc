@@ -1,11 +1,12 @@
 package cn.liz.lizrpc.core.config;
 
 import lombok.Data;
+import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 @Data
-@Configuration
+//@Configuration
+@ToString
 @ConfigurationProperties(prefix = "lizrpc.consumer")
 public class ConsumerConfigProperties {
     private int retries = 1;

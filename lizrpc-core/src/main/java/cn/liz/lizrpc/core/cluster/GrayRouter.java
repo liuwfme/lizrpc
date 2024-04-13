@@ -34,15 +34,15 @@ public class GrayRouter implements Router<InstanceMeta> {
             }
         });
 
-        log.debug("GrayRouter.route, gray:{}, normal:{}, grayRatio:{}",
+        log.info("GrayRouter.route, gray:{}, normal:{}, grayRatio:{}",
                 grayInstances.size(), normalInstances.size(), grayRatio);
         if (grayInstances.isEmpty() || normalInstances.isEmpty()) return providers;
 
         if (random.nextInt(100) < grayRatio) {
-            log.debug("GrayRouter.route, grayInstances:{}", grayInstances);
+            log.info("GrayRouter.route, grayInstances:{}", grayInstances);
             return grayInstances;
         } else {
-            log.debug("GrayRouter.route, normalInstances:{}", normalInstances);
+            log.info("GrayRouter.route, normalInstances:{}", normalInstances);
             return normalInstances;
         }
     }

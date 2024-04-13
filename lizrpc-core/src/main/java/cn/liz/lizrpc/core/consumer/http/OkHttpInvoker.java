@@ -31,14 +31,14 @@ public class OkHttpInvoker implements HttpInvoker {
     @Override
     public RpcResponse<?> post(RpcRequest rpcRequest, String url) {
         String reqJson = JSON.toJSONString(rpcRequest);
-        log.debug("===> reqJson = " + reqJson);
+        log.info("===> OkHttpInvoker#post reqJson = " + reqJson);
         Request request = new Request.Builder()
                 .url(url)
                 .post(RequestBody.create(reqJson, JSON_TYPE))
                 .build();
         try {
             String respJson = client.newCall(request).execute().body().string();
-            log.debug("===> respJson = " + respJson);
+            log.info("===> OkHttpInvoker#post respJson = " + respJson);
             RpcResponse<Object> rpcResponse = JSON.parseObject(respJson, RpcResponse.class);
             return rpcResponse;
         } catch (Exception e) {

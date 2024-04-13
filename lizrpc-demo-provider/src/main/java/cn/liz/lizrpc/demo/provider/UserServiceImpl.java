@@ -1,9 +1,11 @@
 package cn.liz.lizrpc.demo.provider;
 
 import cn.liz.lizrpc.core.annotation.LizProvider;
+import cn.liz.lizrpc.core.api.RpcContext;
 import cn.liz.lizrpc.demo.api.User;
 import cn.liz.lizrpc.demo.api.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -114,6 +116,9 @@ public class UserServiceImpl implements UserService {
         return new User(100, "Liz100");
     }
 
+    @Value("${timeoutPorts}")
+    private String timeoutPorts;
+
     @Override
     public User findTimeout(int timeout) {
         String port = environment.getProperty("server.port");
@@ -128,10 +133,15 @@ public class UserServiceImpl implements UserService {
         return new User(111, "liz-" + port);
     }
 
-    String timeoutPorts = "8081,8094";
-
     @Override
     public void setTimeoutPorts(String ports) {
         this.timeoutPorts = timeoutPorts;
+    }
+
+    @Override
+    public String echoParameter(String key) {
+        System.out.println(" ====>> RpcContext.contextParameters: ");
+        RpcContext.contextParameters.get().forEach((k, v) -> System.out.println(k + " -> " + v));
+        return RpcContext.getContextParameter(key);
     }
 }
