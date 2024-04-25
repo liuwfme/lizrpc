@@ -1,8 +1,7 @@
-package cn.liz.lizrpc.core.api;
+package cn.liz.lizrpc.core.registry;
 
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.meta.ServiceMeta;
-import cn.liz.lizrpc.core.registry.ChangedListener;
 
 import java.util.List;
 

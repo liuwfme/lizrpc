@@ -1,8 +1,9 @@
 package cn.liz.lizrpc.core.config;
 
-import cn.liz.lizrpc.core.api.RegistryCenter;
+import cn.liz.lizrpc.core.registry.RegistryCenter;
 import cn.liz.lizrpc.core.provider.ProviderBootstrap;
 import cn.liz.lizrpc.core.provider.ProviderInvoker;
+import cn.liz.lizrpc.core.registry.liz.LizRegistryCenter;
 import cn.liz.lizrpc.core.registry.zk.ZkRegistryCenter;
 import cn.liz.lizrpc.core.transport.SpringBootTransport;
 import lombok.extern.slf4j.Slf4j;
@@ -45,14 +46,15 @@ public class ProviderConfig {
         return x -> {
             log.info("providerBootstrap starting...");
             providerBootstrap.start();
-            log.info("providerBootstrap started...");
+            log.info("providerBootstrap started!");
         };
     }
 
     @Bean//(initMethod = "start", destroyMethod = "stop")
     @ConditionalOnMissingBean
     public RegistryCenter provider_rc() {
-        return new ZkRegistryCenter();
+//        return new ZkRegistryCenter();
+        return new LizRegistryCenter();
     }
 
     @Bean

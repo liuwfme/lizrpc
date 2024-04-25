@@ -1,6 +1,6 @@
 package cn.liz.lizrpc.core.registry.zk;
 
-import cn.liz.lizrpc.core.api.RegistryCenter;
+import cn.liz.lizrpc.core.registry.RegistryCenter;
 import cn.liz.lizrpc.core.api.RpcException;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
 import cn.liz.lizrpc.core.meta.ServiceMeta;

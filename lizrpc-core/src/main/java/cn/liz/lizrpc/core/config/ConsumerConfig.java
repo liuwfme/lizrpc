@@ -6,6 +6,8 @@ import cn.liz.lizrpc.core.cluster.RoundRibonLoadBalancer;
 import cn.liz.lizrpc.core.consumer.ConsumerBootstrap;
 import cn.liz.lizrpc.core.filter.ContextParameterFilter;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
+import cn.liz.lizrpc.core.registry.RegistryCenter;
+import cn.liz.lizrpc.core.registry.liz.LizRegistryCenter;
 import cn.liz.lizrpc.core.registry.zk.ZkRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +49,7 @@ public class ConsumerConfig {
         return x -> {
             log.info("consumerBootstrap starting ...");
             consumerBootstrap.start();
-            log.info("consumerBootstrap started ...");
+            log.info("consumerBootstrap started !");
         };
     }
 
@@ -67,7 +69,8 @@ public class ConsumerConfig {
     @ConditionalOnMissingBean
     public RegistryCenter consumer_rc() {
 //        return new RegistryCenter.StaticRegistryCenter(List.of(servers.split(",")));
-        return new ZkRegistryCenter();
+//        return new ZkRegistryCenter();
+        return new LizRegistryCenter();
     }
 
     @Bean

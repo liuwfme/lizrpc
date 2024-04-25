@@ -20,6 +20,9 @@ lizrpc:
     halfOpenInitialDelay: 10000
     halfOpenDelay: 60000
 
+lizregistry:
+  servers: http://localhost:8484
+
 app:
   id: lizrpc-consumer
 apollo:

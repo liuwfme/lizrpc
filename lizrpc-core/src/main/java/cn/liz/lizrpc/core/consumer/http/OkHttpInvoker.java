@@ -1,6 +1,5 @@
 package cn.liz.lizrpc.core.consumer.http;
 
-import cn.liz.lizrpc.core.api.RpcException;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
 import cn.liz.lizrpc.core.consumer.HttpInvoker;
@@ -31,19 +30,48 @@ public class OkHttpInvoker implements HttpInvoker {
     @Override
     public RpcResponse<?> post(RpcRequest rpcRequest, String url) {
         String reqJson = JSON.toJSONString(rpcRequest);
-        log.info("===> OkHttpInvoker#post reqJson = " + reqJson);
+        log.debug("===> OkHttpInvoker#post reqJson:{}", reqJson);
         Request request = new Request.Builder()
                 .url(url)
                 .post(RequestBody.create(reqJson, JSON_TYPE))
                 .build();
         try {
             String respJson = client.newCall(request).execute().body().string();
-            log.info("===> OkHttpInvoker#post respJson = " + respJson);
+            log.debug("===> OkHttpInvoker#post respJson:{} ", respJson);
             RpcResponse<Object> rpcResponse = JSON.parseObject(respJson, RpcResponse.class);
             return rpcResponse;
         } catch (Exception e) {
 //            e.printStackTrace();
 //            throw new RpcException(e, RpcException.ErrCodeEnum.SocketTimeout.getCode());
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String post(String requestStr, String url) {
+        log.debug("===> OkHttpInvoker#post requestStr:{},url:{}", requestStr, url);
+        Request request = new Request.Builder()
+                .url(url)
+                .post(RequestBody.create(requestStr, JSON_TYPE))
+                .build();
+        try {
+            String respJson = client.newCall(request).execute().body().string();
+            log.debug("===> OkHttpInvoker#post respJson:{}", requestStr);
+            return respJson;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String get(String url) {
+        log.debug("===> OkHttpInvoker#get url:{}", url);
+        Request request = new Request.Builder().url(url).get().build();
+        try {
+            String respJson = client.newCall(request).execute().body().string();
+            log.debug("===> OkHttpInvoker#get respJson:{}", respJson);
+            return respJson;
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

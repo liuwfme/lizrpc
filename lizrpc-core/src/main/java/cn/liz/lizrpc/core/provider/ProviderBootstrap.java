@@ -1,7 +1,7 @@
 package cn.liz.lizrpc.core.provider;
 
 import cn.liz.lizrpc.core.annotation.LizProvider;
-import cn.liz.lizrpc.core.api.RegistryCenter;
+import cn.liz.lizrpc.core.registry.RegistryCenter;
 import cn.liz.lizrpc.core.config.AppConfigProperties;
 import cn.liz.lizrpc.core.config.ProviderConfigProperties;
 import cn.liz.lizrpc.core.meta.InstanceMeta;
@@ -13,7 +13,6 @@ import jakarta.annotation.PreDestroy;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.LinkedMultiValueMap;

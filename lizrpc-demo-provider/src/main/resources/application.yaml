@@ -19,10 +19,14 @@ lizrpc:
       unit: B001
       tc: 300
 
+lizregistry:
+  servers: http://localhost:8484
+
 logging:
   level:
     root: info
     cn.liz.lizrpc: info
+    com.ctrip: info
 
 app:
   id: lizrpc-provider
