@@ -112,9 +112,9 @@ public class ConsumerConfig {
         return context;
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public ApolloChangedListener apolloChangedListener() {
-        return new ApolloChangedListener();
-    }
+//    @Bean
+//    @ConditionalOnMissingBean
+//    public ApolloChangedListener apolloChangedListener() {
+//        return new ApolloChangedListener();
+//    }
 }

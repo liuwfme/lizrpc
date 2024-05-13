@@ -1,5 +1,6 @@
 package cn.liz.lizrpc.demo.provider;
 
+import cn.liz.lizconfig.client.annotation.EnableLizConfig;
 import cn.liz.lizrpc.core.api.RpcRequest;
 import cn.liz.lizrpc.core.api.RpcResponse;
 import cn.liz.lizrpc.core.config.ProviderConfig;
@@ -7,7 +8,6 @@ import cn.liz.lizrpc.core.config.ProviderConfigProperties;
 import cn.liz.lizrpc.core.transport.SpringBootTransport;
 import cn.liz.lizrpc.demo.api.User;
 import cn.liz.lizrpc.demo.api.UserService;
-import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -27,6 +27,7 @@ import java.util.Map;
 @SpringBootApplication
 @RestController
 //@EnableApolloConfig
+@EnableLizConfig
 @Import({ProviderConfig.class})
 public class LizrpcDemoProviderApplication {
 

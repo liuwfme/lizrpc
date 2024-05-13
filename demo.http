@@ -11,6 +11,9 @@ GET http://localhost:8082/setTimeoutPorts?timeoutPorts=8083,8094
 ### 通过8088调用接口 修改 grayRatio
 GET http://localhost:8088/setGrayRatio/?grayRatio=50
 
+### 查询配置
+GET http://localhost:8081/meta
+
 ### 获取用户信息
 POST http://localhost:8081/lizrpc
 Content-Type: application/json

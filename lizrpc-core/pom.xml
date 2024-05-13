@@ -81,6 +81,12 @@
             <artifactId>spring-cloud-context</artifactId>
             <version>4.1.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>cn.liz</groupId>
+            <artifactId>lizconfig-client</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 </project>

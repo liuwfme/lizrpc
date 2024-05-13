@@ -57,9 +57,9 @@ public class ProviderConfig {
         return new LizRegistryCenter();
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public ApolloChangedListener apolloChangedListener() {
-        return new ApolloChangedListener();
-    }
+//    @Bean
+//    @ConditionalOnMissingBean
+//    public ApolloChangedListener apolloChangedListener() {
+//        return new ApolloChangedListener();
+//    }
 }
